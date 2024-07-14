@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "resolved",
+  "version": "${version}",
+  "name": "resolved",
+  "description": "",
+  "authors": [],
+  "contact": {
+    "repo": "https://github.com/lenovo/resolved"
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/resolved/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "org.aki.resolved.client.ResolvedClient"
+    ],
+    "main": [
+      "org.aki.resolved.Resolved"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
