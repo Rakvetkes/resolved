@@ -13,7 +13,7 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "org.aki.resolved.client.ResolvedClient"
+      "org.aki.resolved.ResolvedClient"
     ],
     "main": [
       "org.aki.resolved.Resolved"
