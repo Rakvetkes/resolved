@@ -1,4 +1,4 @@
-package org.aki.resolved.mgr;
+package org.aki.resolved.manager;
 
 import net.minecraft.util.Identifier;
 import org.ladysnake.cca.api.v3.chunk.ChunkComponentFactoryRegistry;

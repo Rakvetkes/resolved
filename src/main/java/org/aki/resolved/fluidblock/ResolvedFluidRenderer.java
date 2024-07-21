@@ -8,8 +8,8 @@ import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockRenderView;
 import net.minecraft.world.World;
-import org.aki.resolved.mgr.FluidServerManager;
-import org.aki.resolved.mgr.FluidManagerRegistry;
+import org.aki.resolved.manager.FluidServerManager;
+import org.aki.resolved.manager.FluidManagerRegistry;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)

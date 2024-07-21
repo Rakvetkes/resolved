@@ -14,8 +14,8 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 import org.aki.resolved.common.PublicVars;
-import org.aki.resolved.mgr.FluidServerManager;
-import org.aki.resolved.mgr.FluidManagerRegistry;
+import org.aki.resolved.manager.FluidServerManager;
+import org.aki.resolved.manager.FluidManagerRegistry;
 
 public class ResolvedFluid extends FlowableFluid {
 
@@ -104,7 +104,7 @@ public class ResolvedFluid extends FlowableFluid {
     @Override
     public void onScheduledTick(World world, BlockPos pos, FluidState state) {
         FluidServerManager manager = FluidManagerRegistry.REGISTRY.get(world.getRegistryKey().getValue());
-        manager.mark(pos);
+        // todo
     }
 
 }

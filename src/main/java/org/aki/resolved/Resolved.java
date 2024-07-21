@@ -11,8 +11,8 @@ import net.minecraft.util.Identifier;
 import org.aki.resolved.common.PublicVars;
 import org.aki.resolved.fluidblock.ResolvedFluid;
 import org.aki.resolved.fluidblock.ResolvedFluidBlock;
-import org.aki.resolved.mgr.FluidServerManager;
-import org.aki.resolved.mgr.FluidManagerRegistry;
+import org.aki.resolved.manager.FluidServerManager;
+import org.aki.resolved.manager.FluidManagerRegistry;
 
 public class Resolved implements ModInitializer {
 
@@ -28,17 +28,17 @@ public class Resolved implements ModInitializer {
         ServerWorldEvents.LOAD.register((server, world) -> {
             FluidManagerRegistry.REGISTRY.register(world.getRegistryKey().getValue(), new FluidServerManager(world));
         });
-        ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
-            FluidServerManager fm = FluidManagerRegistry.REGISTRY.get(world);
-            fm.onChunkLoading(chunk);
-        });
-        ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
-            FluidServerManager fm = FluidManagerRegistry.REGISTRY.get(world);
-            fm.onChunkUnloading(chunk);
-        });
-        ServerTickEvents.END_WORLD_TICK.register(world -> {
-            FluidManagerRegistry.REGISTRY.get(world).tick();
-        });
+//        ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
+//            FluidServerManager fm = FluidManagerRegistry.REGISTRY.get(world);
+//            fm.onChunkLoading(chunk);
+//        });
+//        ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
+//            FluidServerManager fm = FluidManagerRegistry.REGISTRY.get(world);
+//            fm.onChunkUnloading(chunk);
+//        });
+//        ServerTickEvents.END_WORLD_TICK.register(world -> {
+//            FluidManagerRegistry.REGISTRY.get(world).tick();
+//        });
     }
 
 }

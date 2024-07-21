@@ -1,4 +1,4 @@
-package org.aki.resolved.mgr;
+package org.aki.resolved.manager;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
@@ -16,7 +16,7 @@ public class FluidChunkData implements Component, AutoSyncedComponent {
         data = new NbtCompound();
     }
 
-    public @NotNull FluidBlockContent get(BlockPos pos) {
+    public @NotNull FluidBlockContent get(int i, int j, int k) {
         // todo
         return new FluidBlockContent();
     }
