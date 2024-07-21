@@ -1,12 +1,10 @@
 package org.aki.resolved;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Blocks;
-import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
@@ -15,7 +13,7 @@ import net.minecraft.util.WorldSavePath;
 import org.aki.resolved.common.PublicVars;
 import org.aki.resolved.fluidblock.ResolvedFluid;
 import org.aki.resolved.fluidblock.ResolvedFluidBlock;
-import org.aki.resolved.mgr.FluidManager;
+import org.aki.resolved.mgr.FluidServerManager;
 import org.aki.resolved.mgr.FluidManagerRegistry;
 
 import java.nio.file.Path;
@@ -32,21 +30,20 @@ public class Resolved implements ModInitializer {
                 new ResolvedFluidBlock(PublicVars.RESOLVED_FLUID, Blocks.WATER.getSettings()));
         try {
             System.out.println(AbstractBlock.Settings.class.getField("opaque").get(Blocks.WATER.getSettings()));
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchFieldException e) {
+        } catch (IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
 
         ServerWorldEvents.LOAD.register((server, world) -> {
-            FluidManagerRegistry.REGISTRY.register(world.getRegistryKey().getValue(), FluidManager.load(getDimensionPath(world), world));
+            FluidManagerRegistry.REGISTRY.register(world.getRegistryKey().getValue(), new FluidServerManager());
         });
-        ServerWorldEvents.UNLOAD.register((server, world) -> {
-            FluidManager.save(getDimensionPath(world), FluidManagerRegistry.REGISTRY.get(world.getRegistryKey().getValue()));
-        });
+//        ServerWorldEvents.UNLOAD.register((server, world) -> {
+//            FluidManager.save(getDimensionPath(world), FluidManagerRegistry.REGISTRY.get(world.getRegistryKey().getValue()));
+//        });
         ServerTickEvents.END_WORLD_TICK.register(world -> {
-            FluidManagerRegistry.REGISTRY.get(world.getRegistryKey().getValue()).tick();
+            FluidManagerRegistry.REGISTRY.get(world).tick();
         });
+        FluidManagerRegistry.registerForServer();
     }
 
     private Path getDimensionPath(ServerWorld world) {

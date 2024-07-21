@@ -4,7 +4,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.WaterFluid;
 import net.minecraft.item.Item;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
@@ -15,7 +14,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 import org.aki.resolved.common.PublicVars;
-import org.aki.resolved.mgr.FluidManager;
+import org.aki.resolved.mgr.FluidServerManager;
 import org.aki.resolved.mgr.FluidManagerRegistry;
 
 public class ResolvedFluid extends FlowableFluid {
@@ -104,7 +103,7 @@ public class ResolvedFluid extends FlowableFluid {
 
     @Override
     public void onScheduledTick(World world, BlockPos pos, FluidState state) {
-        FluidManager manager = FluidManagerRegistry.REGISTRY.get(world.getRegistryKey().getValue());
+        FluidServerManager manager = FluidManagerRegistry.REGISTRY.get(world.getRegistryKey().getValue());
         manager.mark(pos);
     }
 
