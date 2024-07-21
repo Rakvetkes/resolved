@@ -13,8 +13,8 @@ import java.util.HashMap;
 
 public class FluidServerManager implements FluidDataAccessor {
 
-    private ServerWorld world;
-    private HashMap<ChunkPos, FluidChunkData> cdatas;
+    private final ServerWorld world;
+    private final HashMap<ChunkPos, FluidChunkData> cdatas;
 
     public FluidServerManager(ServerWorld world) {
         this.world = world;

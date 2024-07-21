@@ -8,8 +8,10 @@ import org.ladysnake.cca.api.v3.component.Component;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 
 public class FluidChunkData implements Component, AutoSyncedComponent {
+
     public static final String ID = "fluid_chunk_data";
     NbtCompound data;
+
     public FluidChunkData() {
         data = new NbtCompound();
     }
