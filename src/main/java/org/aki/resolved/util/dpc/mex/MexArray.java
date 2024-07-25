@@ -1,12 +1,10 @@
 package org.aki.resolved.util.dpc.mex;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import net.minecraft.nbt.NbtCompound;
-import org.aki.resolved.util.dpc.NbtConvertible;
 
 import java.util.NoSuchElementException;
 
-public class MexArray implements MexContainer, NbtConvertible {
+public class MexArray implements MexContainer {
 
     private final IntArrayList array;
     private final IntArrayList state;
@@ -61,12 +59,12 @@ public class MexArray implements MexContainer, NbtConvertible {
     }
 
     @Override
-    public void put(int i) {
+    public void put(int i, int count) {
         if (get(array, i) == 0) {
             add(state, blockId(i), 1);
             ++valueCount;
         }
-        add(array, i, 1);
+        add(array, i, count);
         maxValue = Math.max(maxValue, i);
     }
 
@@ -130,13 +128,4 @@ public class MexArray implements MexContainer, NbtConvertible {
         return new MexArray(this.array.clone(), this.state.clone(), this.maxValue, this.valueCount);
     }
 
-    @Override
-    public void readFromNbt(NbtCompound nbtCompound) {
-        // todo
-    }
-
-    @Override
-    public void writeToNbt(NbtCompound nbtCompound) {
-        // todo
-    }
 }

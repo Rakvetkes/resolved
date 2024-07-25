@@ -8,25 +8,25 @@ import org.aki.resolved.util.dpc.mex.MexContainer;
 import java.util.function.Predicate;
 
 // a palette is a map by nature.
-public class DynamicPalette<T, C extends MexContainer & NbtConvertible> implements NbtConvertible {
+public class DynamicPalette<T> implements NbtConvertible {
 
     private Int2ObjectBiMap<T> palette;
-    private final C counter;
+    private final MexContainer counter;
     private final ValueConverter<T> valueConverter;           // this object links value objects to their nbt forms
 
-    private DynamicPalette(Int2ObjectBiMap<T> palette, C counter, ValueConverter<T> valueConverter) {
+    private DynamicPalette(Int2ObjectBiMap<T> palette, MexContainer counter, ValueConverter<T> valueConverter) {
         this.palette = palette;
         this.counter = counter;
         this.valueConverter = valueConverter;
     }
 
-    public DynamicPalette(int bits, MexContainerProvider<C> counterProvider, ValueConverter<T> valueConverter) {
+    public DynamicPalette(int bits, MexContainerProvider counterProvider, ValueConverter<T> valueConverter) {
         this.palette = Int2ObjectBiMap.create(1 << bits);
         this.counter = counterProvider.createMexContainer();
         this.valueConverter = valueConverter;
     }
 
-    public DynamicPalette(NbtCompound nbtCompound, MexContainerProvider<C> counterProvider, ValueConverter<T> valueConverter) {
+    public DynamicPalette(NbtCompound nbtCompound, MexContainerProvider counterProvider, ValueConverter<T> valueConverter) {
         this.counter = counterProvider.createMexContainer();
         this.valueConverter = valueConverter;
         this.readFromNbt(nbtCompound);
@@ -80,13 +80,13 @@ public class DynamicPalette<T, C extends MexContainer & NbtConvertible> implemen
         NbtCompound nbtPalette = (NbtCompound) nbtCompound.get("palette");
         NbtCompound nbtCounter = (NbtCompound) nbtCompound.get("counter");
 
-        counter.readFromNbt(nbtCounter);
-        this.palette = Int2ObjectBiMap.create(counter.maxValue());
-
-        for (int i = 0; i <= counter.maxValue(); ++i) {
+        int maxValue = nbtCounter.getInt("maxValue");
+        this.palette = Int2ObjectBiMap.create(maxValue);
+        for (int i = 0; i <= maxValue; ++i) {
             if (nbtPalette.contains(String.format("%d", i))) {
                 NbtElement nbtObject = nbtPalette.get(String.format("%d", i));
                 this.palette.put(valueConverter.getValue(nbtObject), i);
+                this.counter.put(i, nbtCounter.getInt(String.format("%d", i)));
             }
         }
     }
@@ -96,12 +96,13 @@ public class DynamicPalette<T, C extends MexContainer & NbtConvertible> implemen
         NbtCompound nbtPalette = new NbtCompound();
         NbtCompound nbtCounter = new NbtCompound();
 
+        nbtCounter.putInt("maxValue", counter.maxValue());
         for (int i = 0; i <= counter.maxValue(); ++i) {
             if (counter.count(i) > 0) {
                 nbtPalette.put(String.format("%d", i), valueConverter.getNbt(palette.get(i)));
+                nbtCounter.putInt(String.format("%d", i), counter.count(i));
             }
         }
-        this.counter.writeToNbt(nbtCounter);
 
         nbtCompound.put("palette", nbtPalette);
         nbtCompound.put("counter", nbtCounter);
@@ -111,12 +112,12 @@ public class DynamicPalette<T, C extends MexContainer & NbtConvertible> implemen
         return counter.valueCount();
     }
 
-    public DynamicPalette<T, C> copy() {
+    public DynamicPalette<T> copy() {
         return new DynamicPalette(palette.copy(), counter.copy(), valueConverter);
     }
 
-    public interface MexContainerProvider<C> {
-        C createMexContainer();
+    public interface MexContainerProvider {
+        MexContainer createMexContainer();
     }
 
     public interface ValueConverter<T> {

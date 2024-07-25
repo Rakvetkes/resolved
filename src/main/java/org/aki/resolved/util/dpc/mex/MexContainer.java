@@ -2,7 +2,11 @@ package org.aki.resolved.util.dpc.mex;
 
 public interface MexContainer {
 
-    void put(int i);
+    void put(int i, int count);
+
+    default void put(int i) {
+        put(i, 1);
+    }
 
     void remove(int i);
 
