@@ -4,30 +4,25 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 import java.util.NoSuchElementException;
 
-public class MexArray implements MexContainer {
+public class MexTree implements MexContainer {
 
-    private final IntArrayList array;
-    private final IntArrayList state;
+    private IntArrayList array;
+    private IntArrayList sum;
     private int maxValue;
-    private int valueCount;
-    private static final int BLOCK_SIZE = 64;
+    private int topNode;
 
-    private MexArray(IntArrayList array, IntArrayList state, int maxValue, int valueCount) {
+    private MexTree(IntArrayList array, IntArrayList sum, int maxValue, int topNode) {
         this.array = array;
-        this.state = state;
+        this.sum = sum;
         this.maxValue = maxValue;
-        this.valueCount = valueCount;
+        this.topNode = topNode;
     }
 
-    public MexArray() {
-        array = new IntArrayList();
-        state = new IntArrayList();
-        maxValue = -1;
-        valueCount = 0;
-    }
-
-    private int blockId(int index) {
-        return index / BLOCK_SIZE;
+    public MexTree() {
+        this.array = new IntArrayList();
+        this.sum = new IntArrayList();
+        this.maxValue = -1;
+        this.topNode = 1;
     }
 
     private void ensureNonNegative(int i) {
@@ -52,9 +47,25 @@ public class MexArray implements MexContainer {
         this.set(arrayList, i, this.get(arrayList, i) + value);
     }
 
+    private void copy(IntArrayList arrayList, int i, int j) {
+        this.set(arrayList, j, this.get(arrayList, i));
+    }
+
     private void resetMaxValue() {
         while (maxValue >= 0 && get(array, maxValue) == 0) {
             --maxValue;
+        }
+    }
+
+    private void addTree(int i, int value) {
+        i = i + 1;      // indexes start from 1
+        while (topNode < i) {
+            topNode <<= 1;
+            copy(sum, topNode >> 1, topNode);
+        }
+        while (i <= topNode) {
+            add(sum, i - 1, value);
+            i += (i & (-i));
         }
     }
 
@@ -64,11 +75,9 @@ public class MexArray implements MexContainer {
             throw new IllegalArgumentException();
         }
         if (get(array, i) == 0) {
-            add(state, blockId(i), 1);
-            ++valueCount;
+            addTree(i, 1);
         }
         add(array, i, count);
-        maxValue = Math.max(maxValue, i);
     }
 
     @Override
@@ -77,10 +86,9 @@ public class MexArray implements MexContainer {
         if (count == 0) {
             throw new NoSuchElementException();
         } else if (count == 1) {
-            add(state, blockId(i), -1);
-            --valueCount;
+            addTree(i, -1);
         }
-        add(array, i, 1);
+        add(array, i, -1);
         if (maxValue == i) {
             resetMaxValue();
         }
@@ -89,8 +97,7 @@ public class MexArray implements MexContainer {
     @Override
     public void removeAll(int i) {
         if (get(array, i) > 0) {
-            add(state, blockId(i), -1);
-            --valueCount;
+            addTree(i, -1);
         }
         set(array, i, 0);
         if (maxValue == i) {
@@ -99,36 +106,40 @@ public class MexArray implements MexContainer {
         }
     }
 
-    @Override @O1
+    @Override
     public int count(int i) {
         return get(array, i);
     }
 
     @Override
     public int mex() {
-        int i = 0;
-        while (get(state, blockId(i)) == BLOCK_SIZE) {
-            i += BLOCK_SIZE;
+        if (get(sum, topNode - 1) == topNode) {
+            return topNode;
         }
-        while (get(array, i) != 0) {
-            ++i;
+        int i = topNode >> 1;
+        while ((i & 1) == 0) {
+            int lb = (i & (-i));
+            if (get(sum, i - 1) < lb) {
+                i ^= lb;
+            }
+            i |= (lb >> 1);
         }
-        return i;
+        return i - 1 + get(sum, i - 1);
     }
 
-    @Override @O1
+    @Override
     public int maxValue() {
-        return this.maxValue;
+        return maxValue;
     }
 
-    @Override @O1
+    @Override
     public int valueCount() {
-        return this.valueCount;
+        return get(sum, topNode - 1);
     }
 
     @Override
     public MexContainer copy() {
-        return new MexArray(this.array.clone(), this.state.clone(), this.maxValue, this.valueCount);
+        return new MexTree(array.clone(), sum.clone(), maxValue, topNode);
     }
 
 }
