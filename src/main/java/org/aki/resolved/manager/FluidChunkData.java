@@ -16,7 +16,7 @@ public class FluidChunkData implements Component, AutoSyncedComponent {
     public static final String ID = "fluid_chunk_data";
     private static final int EDGE_BITS = 4;
     private static final int SECTION_SIZE = 1 << EDGE_BITS * 3;
-    private final PaletteContainer<FluidBlockContent>[] sectionsData;
+    private final PaletteContainer<FluidBlockData>[] sectionsData;
 
     public static final List<FluidChunkData> SYNC_QUEUE = new LinkedList<>();
     // todo save the chunks need to be in sync with client.
@@ -28,7 +28,7 @@ public class FluidChunkData implements Component, AutoSyncedComponent {
         }
     }
 
-    public @NotNull FluidBlockContent get(int i, int j, int k) {
+    public @NotNull FluidBlockData get(int i, int j, int k) {
         return sectionsData[j >> 4].get(computeIndex(i, j & ((1 << EDGE_BITS) - 1), k));
     }
 

@@ -35,7 +35,7 @@ public class FluidServerManager implements FluidDataAccessor {
     }
 
     @Override
-    public @NotNull FluidBlockContent getFluidContent(BlockPos pos) {
+    public @NotNull FluidBlockData getFluidContent(BlockPos pos) {
         FluidChunkData chunk = getChunk(new ChunkPos(pos));
         return chunk.get(pos.getX() & 15, pos.getY(), pos.getZ() & 15);
     }
