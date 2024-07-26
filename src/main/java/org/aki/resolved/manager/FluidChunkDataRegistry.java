@@ -13,7 +13,7 @@ public class FluidChunkDataRegistry implements ChunkComponentInitializer {
 
     @Override
     public void registerChunkComponentFactories(ChunkComponentFactoryRegistry registry) {
-        registry.register(FLUID_DATA, it->new FluidChunkData());
+        registry.register(FLUID_DATA, FluidChunkData::new);
 //        System.out.println("hello");
     }
 

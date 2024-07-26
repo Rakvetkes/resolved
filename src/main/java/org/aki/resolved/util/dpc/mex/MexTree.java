@@ -58,7 +58,7 @@ public class MexTree implements MexContainer {
     }
 
     private void addTree(int i, int value) {
-        i = i + 1;      // indexes start from 1
+        i = i + 1;      // indices start from 1
         while (topNode < i) {
             topNode <<= 1;
             copy(sum, topNode >> 1, topNode);
@@ -66,6 +66,12 @@ public class MexTree implements MexContainer {
         while (i <= topNode) {
             add(sum, i - 1, value);
             i += (i & (-i));
+        }
+    }
+
+    private void shrink() {
+        while (topNode > 1 && get(sum, topNode - 1) == get(sum, (topNode >> 1) - 1)) {
+            topNode >>= 1;
         }
     }
 
@@ -87,6 +93,7 @@ public class MexTree implements MexContainer {
             throw new NoSuchElementException();
         } else if (count == 1) {
             addTree(i, -1);
+            shrink();
         }
         add(array, i, -1);
         if (maxValue == i) {
@@ -98,6 +105,7 @@ public class MexTree implements MexContainer {
     public void removeAll(int i) {
         if (get(array, i) > 0) {
             addTree(i, -1);
+            shrink();
         }
         set(array, i, 0);
         if (maxValue == i) {

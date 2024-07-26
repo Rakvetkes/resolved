@@ -11,24 +11,27 @@ import java.util.function.Predicate;
 public class DynamicPalette<T> implements NbtConvertible {
 
     private Int2ObjectBiMap<T> palette;
-    private final MexContainer counter;
+    private MexContainer counter;
+    private final MexContainerProvider counterProvider;
     private final ValueConverter<T> valueConverter;           // this object links value objects to their nbt forms
 
-    private DynamicPalette(Int2ObjectBiMap<T> palette, MexContainer counter, ValueConverter<T> valueConverter) {
+    private DynamicPalette(Int2ObjectBiMap<T> palette, MexContainer counter, MexContainerProvider counterProvider, ValueConverter<T> valueConverter) {
         this.palette = palette;
         this.counter = counter;
+        this.counterProvider = counterProvider;
         this.valueConverter = valueConverter;
     }
 
     public DynamicPalette(int bits, MexContainerProvider counterProvider, ValueConverter<T> valueConverter) {
         this.palette = Int2ObjectBiMap.create(1 << bits);
         this.counter = counterProvider.createMexContainer();
+        this.counterProvider = counterProvider;
         this.valueConverter = valueConverter;
     }
 
     public DynamicPalette(NbtCompound nbtCompound, MexContainerProvider counterProvider, ValueConverter<T> valueConverter) {
-        this.counter = counterProvider.createMexContainer();
         this.valueConverter = valueConverter;
+        this.counterProvider = counterProvider;
         this.readFromNbt(nbtCompound);
     }
 
@@ -51,14 +54,11 @@ public class DynamicPalette<T> implements NbtConvertible {
         counter.put(id);
     }
 
-    public void recordRemoval(T object) {
-        int id = index(object);
-        if (id != -1) {
-            counter.remove(id);
-        }
+    public void recordRemoval(int id) {
+        counter.remove(id);
     }
 
-    public boolean hasAny(Predicate predicate) {
+    public boolean hasAny(Predicate<T> predicate) {
         for (int i = 0; i <= counter.maxValue(); ++i) {
             if (counter.count(i) > 0 && predicate.test(palette.get(i))) {
                 return true;
@@ -75,13 +75,18 @@ public class DynamicPalette<T> implements NbtConvertible {
         }
     }
 
+    public int maxValue() {
+        return counter.maxValue();
+    }
+
     @Override
     public void readFromNbt(NbtCompound nbtCompound) {
-        NbtCompound nbtPalette = (NbtCompound) nbtCompound.get("palette");
-        NbtCompound nbtCounter = (NbtCompound) nbtCompound.get("counter");
+        NbtCompound nbtPalette = nbtCompound.getCompound("palette");
+        NbtCompound nbtCounter = nbtCompound.getCompound("counter");
 
         int maxValue = nbtCounter.getInt("maxValue");
         this.palette = Int2ObjectBiMap.create(maxValue);
+        this.counter = counterProvider.createMexContainer();
         for (int i = 0; i <= maxValue; ++i) {
             if (nbtPalette.contains(String.format("%d", i))) {
                 NbtElement nbtObject = nbtPalette.get(String.format("%d", i));
@@ -113,7 +118,7 @@ public class DynamicPalette<T> implements NbtConvertible {
     }
 
     public DynamicPalette<T> copy() {
-        return new DynamicPalette(palette.copy(), counter.copy(), valueConverter);
+        return new DynamicPalette<>(palette.copy(), counter.copy(), counterProvider, valueConverter);
     }
 
     public interface MexContainerProvider {
