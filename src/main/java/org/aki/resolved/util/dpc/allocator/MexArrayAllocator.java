@@ -30,20 +30,12 @@ public class MexArrayAllocator implements IdAllocator {
         return index / BLOCK_SIZE;
     }
 
-    private void ensureNonNegative(int i) {
-        if (i < 0) {
-            throw new IndexOutOfBoundsException();
-        }
-    }
-
     private void set(IntArrayList arrayList, int i, int value) {
-        ensureNonNegative(i);
         arrayList.ensureCapacity(i + 1);
         arrayList.set(i, value);
     }
 
     private int get(IntArrayList arrayList, int i) {
-        ensureNonNegative(i);
         arrayList.ensureCapacity(i + 1);
         return arrayList.getInt(i);
     }
@@ -60,9 +52,6 @@ public class MexArrayAllocator implements IdAllocator {
 
     @Override
     public void put(int i, int count) {
-        if (count <= 0) {
-            throw new IllegalArgumentException();
-        }
         if (get(array, i) == 0) {
             add(state, blockId(i), 1);
             ++valueCount;

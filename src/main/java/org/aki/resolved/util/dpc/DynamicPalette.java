@@ -47,7 +47,7 @@ public class DynamicPalette<T> implements NbtConvertible {
 
     public void recordAddition(T object) {
         int id = index(object);
-        if (index(object) == -1) {
+        if (id == -1) {
             id = counter.newId();
             palette.put(object, id);
         }

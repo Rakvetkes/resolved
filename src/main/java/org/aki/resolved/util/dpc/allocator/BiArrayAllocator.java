@@ -3,13 +3,16 @@ package org.aki.resolved.util.dpc.allocator;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 public class BiArrayAllocator implements IdAllocator {
+
     protected IntArrayList freed, idCount;
     protected int countSum;
+
     public BiArrayAllocator() {
         freed = new IntArrayList();
         idCount = new IntArrayList();
         countSum = 0;
     }
+
     protected BiArrayAllocator(BiArrayAllocator allocator) {
         freed = allocator.freed.clone();
         idCount = allocator.idCount.clone();
@@ -18,20 +21,15 @@ public class BiArrayAllocator implements IdAllocator {
 
     @Override
     public void put(int i, int count) {
-        if (count < 0) {
-            throw new IndexOutOfBoundsException();
-        }
         idCount.ensureCapacity(i);
-        if (idCount.getInt(i) == 0)
+        if (idCount.getInt(i) == 0) {
             ++countSum;
+        }
         idCount.add(i, count);
     }
 
     @Override
     public void remove(int i) {
-        if (i > idCount.size()) {
-            throw new IndexOutOfBoundsException();
-        }
         if (idCount.getInt(i) == 1) {
             this.removeAll(i);
         } else {
@@ -41,12 +39,13 @@ public class BiArrayAllocator implements IdAllocator {
 
     @Override
     public void removeAll(int i) {
-        if (idCount.getInt(i) != 0)
+        if (idCount.getInt(i) != 0) {
             --countSum;
-        idCount.set(i, 0);
-        freed.addLast(i);
-        while (!idCount.isEmpty() && idCount.getLast() == 0) {
-            idCount.removeLast();
+            freed.addLast(i);
+            idCount.set(i, 0);
+            while (!idCount.isEmpty() && idCount.getLast() == 0) {
+                idCount.removeLast();
+            }
         }
     }
 
