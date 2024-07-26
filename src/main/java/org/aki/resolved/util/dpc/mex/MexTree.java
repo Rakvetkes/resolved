@@ -6,8 +6,8 @@ import java.util.NoSuchElementException;
 
 public class MexTree implements MexContainer {
 
-    private IntArrayList array;
-    private IntArrayList sum;
+    private final IntArrayList array;
+    private final IntArrayList sum;
     private int maxValue;
     private int topNode;
 
