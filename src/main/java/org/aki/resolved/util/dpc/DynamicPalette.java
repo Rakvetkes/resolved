@@ -81,36 +81,29 @@ public class DynamicPalette<T> implements NbtConvertible {
 
     @Override
     public void readFromNbt(NbtCompound nbtCompound) {
-        NbtCompound nbtPalette = nbtCompound.getCompound("palette");
-        NbtCompound nbtCounter = nbtCompound.getCompound("counter");
-
-        int maxValue = nbtCounter.getInt("maxValue");
+        int maxValue = nbtCompound.getInt("maxValue");
         this.palette = Int2ObjectBiMap.create(maxValue);
         this.counter = counterProvider.createIDAllocator();
         for (int i = 0; i <= maxValue; ++i) {
-            if (nbtPalette.contains(String.format("%d", i))) {
-                NbtElement nbtObject = nbtPalette.get(String.format("%d", i));
-                this.palette.put(valueConverter.getValue(nbtObject), i);
-                this.counter.put(i, nbtCounter.getInt(String.format("%d", i)));
+            if (nbtCompound.contains(String.format("%d", i))) {
+                NbtCompound nbtItem = nbtCompound.getCompound(String.format("%d", i));
+                this.palette.put(valueConverter.getValue(nbtItem.get("data")), i);
+                this.counter.put(i, nbtItem.getInt("count"));
             }
         }
     }
 
     @Override
     public void writeToNbt(NbtCompound nbtCompound) {
-        NbtCompound nbtPalette = new NbtCompound();
-        NbtCompound nbtCounter = new NbtCompound();
-
-        nbtCounter.putInt("maxValue", counter.maxValue());
+        nbtCompound.putInt("maxValue", counter.maxValue());
         for (int i = 0; i <= counter.maxValue(); ++i) {
             if (counter.count(i) > 0) {
-                nbtPalette.put(String.format("%d", i), valueConverter.getNbt(palette.get(i)));
-                nbtCounter.putInt(String.format("%d", i), counter.count(i));
+                NbtCompound nbtItem = new NbtCompound();
+                nbtItem.put("data", valueConverter.getNbt(palette.get(i)));
+                nbtItem.putInt("count", counter.count(i));
+                nbtCompound.put(String.format("%d", i), nbtItem);
             }
         }
-
-        nbtCompound.put("palette", nbtPalette);
-        nbtCompound.put("counter", nbtCounter);
     }
 
     public int getSize() {

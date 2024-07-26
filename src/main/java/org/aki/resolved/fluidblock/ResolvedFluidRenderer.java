@@ -26,7 +26,7 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
         return manager.getColor(pos);
     }
 
-    public World getWorld(BlockRenderView view) {
+    public static World getWorld(BlockRenderView view) {
         if (view.getClass().equals(ChunkRendererRegion.class)) {
             try {
                 return (World) view.getClass().getDeclaredField("world").get(view);
