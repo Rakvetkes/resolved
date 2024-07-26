@@ -1,6 +1,6 @@
-package org.aki.resolved.util.dpc.mex;
+package org.aki.resolved.util.dpc.allocator;
 
-public interface MexContainer {
+public interface IdAllocator {
 
     void put(int i, int count);
 
@@ -15,7 +15,7 @@ public interface MexContainer {
     @O1
     int count(int i);
 
-    int mex();
+    int newId();
 
     @O1
     int maxValue();
@@ -23,6 +23,6 @@ public interface MexContainer {
     @O1
     int valueCount();
 
-    MexContainer copy();
+    IdAllocator copy();
 
 }

@@ -1,10 +1,10 @@
-package org.aki.resolved.util.dpc.mex;
+package org.aki.resolved.util.dpc.allocator;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 import java.util.NoSuchElementException;
 
-public class MexArray implements MexContainer {
+public class MexArrayAllocator implements IdAllocator {
 
     private final IntArrayList array;
     private final IntArrayList state;
@@ -12,14 +12,14 @@ public class MexArray implements MexContainer {
     private int valueCount;
     private static final int BLOCK_SIZE = 64;
 
-    private MexArray(IntArrayList array, IntArrayList state, int maxValue, int valueCount) {
+    private MexArrayAllocator(IntArrayList array, IntArrayList state, int maxValue, int valueCount) {
         this.array = array;
         this.state = state;
         this.maxValue = maxValue;
         this.valueCount = valueCount;
     }
 
-    public MexArray() {
+    public MexArrayAllocator() {
         array = new IntArrayList();
         state = new IntArrayList();
         maxValue = -1;
@@ -105,7 +105,7 @@ public class MexArray implements MexContainer {
     }
 
     @Override
-    public int mex() {
+    public int newId() {
         int i = 0;
         while (get(state, blockId(i)) == BLOCK_SIZE) {
             i += BLOCK_SIZE;
@@ -127,8 +127,8 @@ public class MexArray implements MexContainer {
     }
 
     @Override
-    public MexContainer copy() {
-        return new MexArray(this.array.clone(), this.state.clone(), this.maxValue, this.valueCount);
+    public IdAllocator copy() {
+        return new MexArrayAllocator(this.array.clone(), this.state.clone(), this.maxValue, this.valueCount);
     }
 
 }

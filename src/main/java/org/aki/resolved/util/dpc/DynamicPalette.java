@@ -3,7 +3,7 @@ package org.aki.resolved.util.dpc;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.collection.Int2ObjectBiMap;
-import org.aki.resolved.util.dpc.mex.MexContainer;
+import org.aki.resolved.util.dpc.allocator.IdAllocator;
 
 import java.util.function.Predicate;
 
@@ -11,25 +11,25 @@ import java.util.function.Predicate;
 public class DynamicPalette<T> implements NbtConvertible {
 
     private Int2ObjectBiMap<T> palette;
-    private MexContainer counter;
-    private final MexContainerProvider counterProvider;
+    private IdAllocator counter;
+    private final IDAllocatorProvider counterProvider;
     private final ValueConverter<T> valueConverter;           // this object links value objects to their nbt forms
 
-    private DynamicPalette(Int2ObjectBiMap<T> palette, MexContainer counter, MexContainerProvider counterProvider, ValueConverter<T> valueConverter) {
+    private DynamicPalette(Int2ObjectBiMap<T> palette, IdAllocator counter, IDAllocatorProvider counterProvider, ValueConverter<T> valueConverter) {
         this.palette = palette;
         this.counter = counter;
         this.counterProvider = counterProvider;
         this.valueConverter = valueConverter;
     }
 
-    public DynamicPalette(int bits, MexContainerProvider counterProvider, ValueConverter<T> valueConverter) {
+    public DynamicPalette(int bits, IDAllocatorProvider counterProvider, ValueConverter<T> valueConverter) {
         this.palette = Int2ObjectBiMap.create(1 << bits);
-        this.counter = counterProvider.createMexContainer();
+        this.counter = counterProvider.createIDAllocator();
         this.counterProvider = counterProvider;
         this.valueConverter = valueConverter;
     }
 
-    public DynamicPalette(NbtCompound nbtCompound, MexContainerProvider counterProvider, ValueConverter<T> valueConverter) {
+    public DynamicPalette(NbtCompound nbtCompound, IDAllocatorProvider counterProvider, ValueConverter<T> valueConverter) {
         this.valueConverter = valueConverter;
         this.counterProvider = counterProvider;
         this.readFromNbt(nbtCompound);
@@ -48,7 +48,7 @@ public class DynamicPalette<T> implements NbtConvertible {
     public void recordAddition(T object) {
         int id = index(object);
         if (index(object) == -1) {
-            id = counter.mex();
+            id = counter.newId();
             palette.put(object, id);
         }
         counter.put(id);
@@ -86,7 +86,7 @@ public class DynamicPalette<T> implements NbtConvertible {
 
         int maxValue = nbtCounter.getInt("maxValue");
         this.palette = Int2ObjectBiMap.create(maxValue);
-        this.counter = counterProvider.createMexContainer();
+        this.counter = counterProvider.createIDAllocator();
         for (int i = 0; i <= maxValue; ++i) {
             if (nbtPalette.contains(String.format("%d", i))) {
                 NbtElement nbtObject = nbtPalette.get(String.format("%d", i));
@@ -121,8 +121,8 @@ public class DynamicPalette<T> implements NbtConvertible {
         return new DynamicPalette<>(palette.copy(), counter.copy(), counterProvider, valueConverter);
     }
 
-    public interface MexContainerProvider {
-        MexContainer createMexContainer();
+    public interface IDAllocatorProvider {
+        IdAllocator createIDAllocator();
     }
 
     public interface ValueConverter<T> {

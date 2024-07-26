@@ -2,7 +2,7 @@ package org.aki.resolved.util.dpc;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.collection.PackedIntegerArray;
-import org.aki.resolved.util.dpc.mex.MexTree;
+import org.aki.resolved.util.dpc.allocator.MexTreeAllocator;
 
 public class PaletteContainer<T> implements NbtConvertible {
 
@@ -10,7 +10,7 @@ public class PaletteContainer<T> implements NbtConvertible {
     private DynamicPalette<T> palette;
     private final DynamicPalette.ValueConverter<T> valueConverter;
     private final static int INITIAL_ELEMENT_BITS = 4;
-    private final static DynamicPalette.MexContainerProvider DEFAULT_CONTAINER = MexTree::new;
+    private final static DynamicPalette.IDAllocatorProvider DEFAULT_CONTAINER = MexTreeAllocator::new;
 
     public PaletteContainer(int size, DynamicPalette.ValueConverter<T> valueConverter) {
         storage = new PackedIntegerArray(INITIAL_ELEMENT_BITS, size);

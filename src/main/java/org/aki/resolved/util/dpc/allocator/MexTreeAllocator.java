@@ -1,24 +1,24 @@
-package org.aki.resolved.util.dpc.mex;
+package org.aki.resolved.util.dpc.allocator;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 import java.util.NoSuchElementException;
 
-public class MexTree implements MexContainer {
+public class MexTreeAllocator implements IdAllocator {
 
     private final IntArrayList array;
     private final IntArrayList sum;
     private int maxValue;
     private int topNode;
 
-    private MexTree(IntArrayList array, IntArrayList sum, int maxValue, int topNode) {
+    private MexTreeAllocator(IntArrayList array, IntArrayList sum, int maxValue, int topNode) {
         this.array = array;
         this.sum = sum;
         this.maxValue = maxValue;
         this.topNode = topNode;
     }
 
-    public MexTree() {
+    public MexTreeAllocator() {
         this.array = new IntArrayList();
         this.sum = new IntArrayList();
         this.maxValue = -1;
@@ -120,7 +120,7 @@ public class MexTree implements MexContainer {
     }
 
     @Override
-    public int mex() {
+    public int newId() {
         if (get(sum, topNode - 1) == topNode) {
             return topNode;
         }
@@ -146,8 +146,8 @@ public class MexTree implements MexContainer {
     }
 
     @Override
-    public MexContainer copy() {
-        return new MexTree(array.clone(), sum.clone(), maxValue, topNode);
+    public IdAllocator copy() {
+        return new MexTreeAllocator(array.clone(), sum.clone(), maxValue, topNode);
     }
 
 }
