@@ -9,24 +9,10 @@ import org.jetbrains.annotations.NotNull;
 public class FluidServerManager implements FluidDataAccessor {
 
     private final ServerWorld world;
-//    private final HashMap<ChunkPos, FluidChunkData> cdatas;
 
     public FluidServerManager(ServerWorld world) {
         this.world = world;
-        // cdatas = new HashMap<>();
     }
-
-//    public void tick() {
-//
-//    }
-
-//    public void onChunkLoading(Chunk chunk) {
-//        Log.debug(LogCategory.GENERAL, "loading chunk fluid data: " +chunk.getPos());
-//        cdatas.put(chunk.getPos(), FluidChunkDataRegistry.FLUID_DATA.get(chunk));
-//    }
-//    public void onChunkUnloading(Chunk chunk) {
-//        cdatas.remove(chunk.getPos());
-//    }
 
     public FluidChunkData getChunk(ChunkPos chunkPos) {
         Chunk chunk = world.getChunk(chunkPos.x, chunkPos.z);
@@ -35,12 +21,12 @@ public class FluidServerManager implements FluidDataAccessor {
     }
 
     @Override
-    public @NotNull FluidBlockData getFluidContent(BlockPos pos) {
+    public @NotNull FluidBlockData getFluidData(BlockPos pos) {
         FluidChunkData chunk = getChunk(new ChunkPos(pos));
-        return chunk.get(pos.getX() & 15, pos.getY(), pos.getZ() & 15);
+        return chunk.get(pos.getX() & ((1 << FluidChunkData.EDGE_BITS) - 1), pos.getY(), pos.getZ() & ((1 << FluidChunkData.EDGE_BITS) - 1));
     }
 
     public int getColor(BlockPos pos) {
-        return getFluidContent(pos).getColor();
+        return getFluidData(pos).getColor();
     }
 }

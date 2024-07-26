@@ -48,8 +48,8 @@ public class PaletteContainer<T> implements NbtConvertible {
     }
 
     public void set(int index, T value) {
-        palette.recordAddition(value);
         palette.recordRemoval(storage.get(index));
+        palette.recordAddition(value);
         int i = palette.index(value);
         expand(i);
         storage.set(index, i);

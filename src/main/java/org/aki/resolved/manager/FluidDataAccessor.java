@@ -5,5 +5,5 @@ import org.jetbrains.annotations.NotNull;
 
 public interface FluidDataAccessor {
     @NotNull
-    FluidBlockData getFluidContent(BlockPos pos);
+    FluidBlockData getFluidData(BlockPos pos);
 }

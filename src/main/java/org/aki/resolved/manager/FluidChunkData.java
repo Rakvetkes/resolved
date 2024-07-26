@@ -14,8 +14,8 @@ import java.util.List;
 public class FluidChunkData implements Component, AutoSyncedComponent {
 
     public static final String ID = "fluid_chunk_data";
-    private static final int EDGE_BITS = 4;
-    private static final int SECTION_SIZE = 1 << EDGE_BITS * 3;
+    public static final int EDGE_BITS = 4;
+    public static final int SECTION_SIZE = 1 << EDGE_BITS * 3;
     private final PaletteContainer<FluidBlockData>[] sectionsData;
 
     public static final List<FluidChunkData> SYNC_QUEUE = new LinkedList<>();
@@ -24,7 +24,7 @@ public class FluidChunkData implements Component, AutoSyncedComponent {
     public FluidChunkData(Chunk chunk) {
         sectionsData = new PaletteContainer[chunk.countVerticalSections()];
         for (int i = 0; i < sectionsData.length; ++i) {
-            sectionsData[i] = new PaletteContainer<>(SECTION_SIZE, null/*todo*/);
+            sectionsData[i] = new PaletteContainer<>(SECTION_SIZE, FluidBlockData.SimpleConverter.INSTANCE);
         }
     }
 
@@ -40,7 +40,7 @@ public class FluidChunkData implements Component, AutoSyncedComponent {
     public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
         NbtCompound fluidData = tag.getCompound(ID);
         for (int i = 0; i < sectionsData.length; ++i) {
-            sectionsData[i] = new PaletteContainer<>(fluidData.getCompound(String.format("%d", i)), null/*todo*/);
+            sectionsData[i] = new PaletteContainer<>(fluidData.getCompound(String.format("%d", i)), FluidBlockData.SimpleConverter.INSTANCE);
         }
     }
 
