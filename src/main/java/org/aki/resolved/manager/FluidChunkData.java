@@ -32,18 +32,21 @@ public class FluidChunkData implements Component, AutoSyncedComponent {
 
     @Override
     public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+        NbtCompound fluidData = tag.getCompound(ID);
         for (int i = 0; i < sectionsData.length; ++i) {
-            sectionsData[i] = new PaletteContainer<>(tag.getCompound(String.format("%d", i)), null/*todo*/);
+            sectionsData[i] = new PaletteContainer<>(fluidData.getCompound(String.format("%d", i)), null/*todo*/);
         }
     }
 
     @Override
     public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+        NbtCompound fluidData = new NbtCompound();
         for (int i = 0; i < sectionsData.length; ++i) {
             sectionsData[i].shrink();   // try to shrink when saving
             NbtCompound nbtCompound = new NbtCompound();
             sectionsData[i].writeToNbt(nbtCompound);
-            tag.put(String.format("%d", i), nbtCompound);
+            fluidData.put(String.format("%d", i), nbtCompound);
         }
+        tag.put(ID, fluidData);
     }
 }
