@@ -8,12 +8,18 @@ import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.Component;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class FluidChunkData implements Component, AutoSyncedComponent {
 
     public static final String ID = "fluid_chunk_data";
     private static final int EDGE_BITS = 4;
     private static final int SECTION_SIZE = 1 << EDGE_BITS * 3;
     private final PaletteContainer<FluidBlockContent>[] sectionsData;
+
+    public static final List<FluidChunkData> SYNC_QUEUE = new LinkedList<>();
+    // todo save the chunks need to be in sync with client.
 
     public FluidChunkData(Chunk chunk) {
         sectionsData = new PaletteContainer[chunk.countVerticalSections()];
