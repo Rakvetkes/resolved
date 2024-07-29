@@ -1,110 +1,72 @@
 package org.aki.resolved.fluidblock;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
-import org.aki.resolved.common.PublicVars;
-import org.aki.resolved.manager.FluidServerManager;
-import org.aki.resolved.manager.FluidManagerRegistry;
+import org.aki.resolved.Registered;
 
-public class ResolvedFluid extends FlowableFluid {
+public class ResolvedFluid extends Fluid {
 
-    /* Abandoned vanilla features */
-
-    @Deprecated @Override
-    public Fluid getFlowing() {
-        return this;
+    @Override
+    protected Vec3d getVelocity(BlockView world, BlockPos pos, FluidState state) {
+        return new Vec3d(0, 0, 0);
     }
 
-    @Deprecated @Override
-    public Fluid getStill() {
-        return this;
+    @Override
+    public float getHeight(FluidState state, BlockView world, BlockPos pos) {
+        return 1.0f;
     }
 
-    @Deprecated @Override
-    public boolean isStill(FluidState state) {
-        return true;
+    @Override
+    public float getHeight(FluidState state) {
+        return 1.0f;
     }
 
-    @Deprecated @Override
-    protected int getMaxFlowDistance(WorldView world) {
-        return 4;
+    @Override
+    public VoxelShape getShape(FluidState state, BlockView world, BlockPos pos) {
+        return VoxelShapes.cuboid(0.0, 0.0, 0.0, 1.0, 1.0, 1.0);
     }
 
-    @Deprecated @Override
-    protected boolean isInfinite(World world) {
-        return false;
+    @Override
+    protected BlockState toBlockState(FluidState state) {
+        return Registered.RESOLVED_FLUID_BLOCK.getDefaultState();
     }
 
-    @Deprecated @Override
-    protected int getLevelDecreasePerBlock(WorldView world) {
-        return 1;
+    @Override
+    public Item getBucketItem() {
+        return null;
     }
 
-    @Deprecated @Override
-    protected void beforeBreakingBlock(WorldAccess world, BlockPos pos, BlockState state) {
-
-    }
-
-    /* Unused but reserved vanilla features */
-
-    @Deprecated @Override
+    @Override
     protected boolean canBeReplacedWith(FluidState state, BlockView world, BlockPos pos, Fluid fluid, Direction direction) {
         return false;
     }
 
     @Override
     public int getTickRate(WorldView world) {
-        return 1;
+        return 0;
     }
 
     @Override
     protected float getBlastResistance() {
-        return 100.0F;
-    }
-
-
-    public ResolvedFluid() {
-        setDefaultState(getDefaultState().with(LEVEL, 8));
+        return 0;
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Fluid, FluidState> builder) {
-        super.appendProperties(builder);
-        builder.add(LEVEL);
-    }
-
-    @Override
-    protected BlockState toBlockState(FluidState state) {
-        return PublicVars.RESOLVED_FLUID_BLOCK.getDefaultState()
-                .with(Properties.LEVEL_15, getBlockStateLevel(state));
+    public boolean isStill(FluidState state) {
+        return false;
     }
 
     @Override
     public int getLevel(FluidState state) {
-        return state.get(LEVEL);
+        return 0;
     }
-
-
-    @Override
-    public Item getBucketItem() {
-        return null;        // todo
-    }
-
-    @Override
-    public void onScheduledTick(World world, BlockPos pos, FluidState state) {
-        FluidServerManager manager = FluidManagerRegistry.REGISTRY.get(world.getRegistryKey().getValue());
-        // todo
-    }
-
 }

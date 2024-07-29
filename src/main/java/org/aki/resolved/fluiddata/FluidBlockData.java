@@ -1,10 +1,11 @@
-package org.aki.resolved.manager;
+package org.aki.resolved.fluiddata;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import org.aki.resolved.util.dpc.DynamicPalette;
-import org.aki.resolved.util.dpc.NbtConvertible;
+import org.aki.resolved.fluiddata.container.DynamicPalette;
+import org.aki.resolved.fluiddata.container.NbtConvertible;
 
 public class FluidBlockData implements NbtConvertible {
 
@@ -16,12 +17,21 @@ public class FluidBlockData implements NbtConvertible {
         fluidVol = new IntArrayList();
     }
 
+    public FluidBlockData(Fluid fluid) {
+        this();
+        // todo
+    }
+
     public FluidBlockData(NbtCompound nbtCompound) {
         readFromNbt(nbtCompound);
     }
 
-    public int getColor() {
-        return 0xDDEEFF;
+    public static FluidBlockData getFromFluid(Fluid fluid) {
+        return new FluidBlockData(fluid);
+    }
+
+    public static FluidBlockData getNullData() {
+        return new FluidBlockData();
     }
 
     @Override
@@ -56,6 +66,10 @@ public class FluidBlockData implements NbtConvertible {
             return nbtCompound;
         }
 
+    }
+
+    public int getColor() {
+        return 0xDDEEFF; // todo
     }
 
 }

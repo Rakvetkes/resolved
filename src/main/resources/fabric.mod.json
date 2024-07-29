@@ -12,7 +12,7 @@
   "environment": "*",
   "entrypoints": {
     "cardinal-components": [
-      "org.aki.resolved.manager.FluidChunkDataRegistry"
+      "org.aki.resolved.fluiddata.FluidChunkDataRegistry"
     ],
     "client": [
       "org.aki.resolved.ResolvedClient"
@@ -30,5 +30,8 @@
     "cardinal-components": [
       "resolved:fluid_chunk_data"
     ]
-  }
+  },
+  "mixins": [
+    "resolved.mixins.json"
+  ]
 }

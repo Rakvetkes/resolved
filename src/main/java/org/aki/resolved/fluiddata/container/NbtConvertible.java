@@ -1,4 +1,4 @@
-package org.aki.resolved.util.dpc;
+package org.aki.resolved.fluiddata.container;
 
 import net.minecraft.nbt.NbtCompound;
 

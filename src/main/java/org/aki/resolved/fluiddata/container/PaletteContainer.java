@@ -1,8 +1,8 @@
-package org.aki.resolved.util.dpc;
+package org.aki.resolved.fluiddata.container;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.collection.PackedIntegerArray;
-import org.aki.resolved.util.dpc.allocator.BiArrayAllocator;
+import org.aki.resolved.fluiddata.container.allocator.BiArrayAllocator;
 
 public class PaletteContainer<T> implements NbtConvertible {
 
@@ -12,10 +12,12 @@ public class PaletteContainer<T> implements NbtConvertible {
     private final static int INITIAL_ELEMENT_BITS = 4;
     private final static DynamicPalette.IDAllocatorProvider DEFAULT_CONTAINER = BiArrayAllocator::new;
 
-    public PaletteContainer(int size, DynamicPalette.ValueConverter<T> valueConverter) {
+    public PaletteContainer(int size, T nullObject, DynamicPalette.ValueConverter<T> valueConverter) {
         storage = new PackedIntegerArray(INITIAL_ELEMENT_BITS, size);
         palette = new DynamicPalette<>(0, DEFAULT_CONTAINER, valueConverter);
         this.valueConverter = valueConverter;
+
+        palette.recordAddition(nullObject);
     }
 
     public PaletteContainer(NbtCompound nbtCompound, DynamicPalette.ValueConverter<T> valueConverter) {

@@ -1,9 +1,9 @@
-package org.aki.resolved.util.dpc;
+package org.aki.resolved.fluiddata.container;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.collection.Int2ObjectBiMap;
-import org.aki.resolved.util.dpc.allocator.IdAllocator;
+import org.aki.resolved.fluiddata.container.allocator.IdAllocator;
 
 import java.util.function.Predicate;
 
@@ -82,7 +82,7 @@ public class DynamicPalette<T> implements NbtConvertible {
     @Override
     public void readFromNbt(NbtCompound nbtCompound) {
         int maxValue = nbtCompound.getInt("maxValue");
-        this.palette = Int2ObjectBiMap.create(maxValue);
+        this.palette = Int2ObjectBiMap.create(maxValue + 1);
         this.counter = counterProvider.createIDAllocator();
         for (int i = 0; i <= maxValue; ++i) {
             if (nbtCompound.contains(String.format("%d", i))) {

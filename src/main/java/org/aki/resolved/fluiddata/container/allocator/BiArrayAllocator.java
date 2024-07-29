@@ -1,4 +1,4 @@
-package org.aki.resolved.util.dpc.allocator;
+package org.aki.resolved.fluiddata.container.allocator;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
@@ -21,28 +21,27 @@ public class BiArrayAllocator implements IdAllocator {
 
     @Override
     public void put(int i, int count) {
-        idCount.ensureCapacity(i);
-        if (idCount.getInt(i) == 0) {
+        if (ArrayHelper.get(idCount, i) == 0) {
             ++countSum;
         }
-        idCount.add(i, count);
+        ArrayHelper.add(idCount, i, count);
     }
 
     @Override
     public void remove(int i) {
-        if (idCount.getInt(i) == 1) {
+        if (ArrayHelper.get(idCount, i) == 1) {
             this.removeAll(i);
         } else {
-            idCount.add(i, -1);
+            ArrayHelper.add(idCount, i, -1);
         }
     }
 
     @Override
     public void removeAll(int i) {
-        if (idCount.getInt(i) != 0) {
+        if (ArrayHelper.get(idCount, i) != 0) {
             --countSum;
             freed.addLast(i);
-            idCount.set(i, 0);
+            ArrayHelper.set(idCount, i, 0);
             while (!idCount.isEmpty() && idCount.getLast() == 0) {
                 idCount.removeLast();
             }
@@ -51,12 +50,12 @@ public class BiArrayAllocator implements IdAllocator {
 
     @Override
     public int count(int i) {
-        return idCount.getInt(i);
+        return ArrayHelper.get(idCount, i);
     }
 
     @Override
     public int newId() {
-        while (!freed.isEmpty() && idCount.getInt(freed.getLast()) != 0) {
+        while (!freed.isEmpty() && ArrayHelper.get(idCount, freed.getLast()) != 0) {
             freed.removeLast();
         }
         if (freed.isEmpty()) {
@@ -68,7 +67,7 @@ public class BiArrayAllocator implements IdAllocator {
 
     @Override
     public int maxValue() {
-        return idCount.size();
+        return idCount.size() - 1;
     }
 
     @Override

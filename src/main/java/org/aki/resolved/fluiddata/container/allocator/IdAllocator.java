@@ -1,4 +1,4 @@
-package org.aki.resolved.util.dpc.allocator;
+package org.aki.resolved.fluiddata.container.allocator;
 
 public interface IdAllocator {
 
@@ -12,15 +12,12 @@ public interface IdAllocator {
 
     void removeAll(int i);
 
-    @O1
     int count(int i);
 
     int newId();
 
-    @O1
     int maxValue();
 
-    @O1
     int valueCount();
 
     IdAllocator copy();
