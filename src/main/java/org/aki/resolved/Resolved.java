@@ -7,7 +7,7 @@ public class Resolved implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        System.out.println(Registered.Constituents.WATER);
+        Registered.registerAll();
         CommandGetBlock.onInitialize();
     }
 
