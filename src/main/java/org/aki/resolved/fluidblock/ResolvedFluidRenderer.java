@@ -10,7 +10,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.BlockRenderView;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import org.aki.resolved.fluiddata.FluidChunkDataRegistry;
+import org.aki.resolved.Registered;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
@@ -24,7 +24,7 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
     public int getFluidColor(@Nullable BlockRenderView view, @Nullable BlockPos pos, FluidState state) {
         if (view == null) return 0x0;
         Chunk chunk = getWorld(view).getChunk(ChunkSectionPos.getSectionCoord(pos.getX()), ChunkSectionPos.getSectionCoord(pos.getZ()));
-        return FluidChunkDataRegistry.FLUID_DATA.get(chunk).getFluidData(pos.getX() & 15, pos.getY(), pos.getZ() & 15).getColor();
+        return Registered.FLUID_DATA.get(chunk).getFluidData(pos.getX() & 15, pos.getY(), pos.getZ() & 15).getColor();
     }
 
     public static World getWorld(BlockRenderView view) {
