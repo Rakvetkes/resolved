@@ -1,4 +1,4 @@
-package org.aki.resolved.fluiddata.container.allocator;
+package org.aki.resolved.fluiddata.chunkdata.allocator;
 
 public interface IdAllocator {
 

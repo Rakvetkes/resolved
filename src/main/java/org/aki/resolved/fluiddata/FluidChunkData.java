@@ -3,7 +3,7 @@ package org.aki.resolved.fluiddata;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.chunk.Chunk;
-import org.aki.resolved.fluiddata.container.PaletteContainer;
+import org.aki.resolved.fluiddata.chunkdata.PaletteContainer;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.Component;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;

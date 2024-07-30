@@ -1,9 +1,9 @@
-package org.aki.resolved.fluiddata.container;
+package org.aki.resolved.fluiddata.chunkdata;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.collection.Int2ObjectBiMap;
-import org.aki.resolved.fluiddata.container.allocator.IdAllocator;
+import org.aki.resolved.fluiddata.chunkdata.allocator.IdAllocator;
 
 import java.util.function.Predicate;
 

@@ -1,4 +1,4 @@
-package org.aki.resolved.fluiddata.container;
+package org.aki.resolved.fluiddata.chunkdata;
 
 import net.minecraft.nbt.NbtCompound;
 

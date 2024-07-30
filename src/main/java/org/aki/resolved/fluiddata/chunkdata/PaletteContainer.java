@@ -1,23 +1,24 @@
-package org.aki.resolved.fluiddata.container;
+package org.aki.resolved.fluiddata.chunkdata;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.collection.EmptyPaletteStorage;
 import net.minecraft.util.collection.PackedIntegerArray;
-import org.aki.resolved.fluiddata.container.allocator.BiArrayAllocator;
+import net.minecraft.util.collection.PaletteStorage;
+import org.aki.resolved.fluiddata.chunkdata.allocator.BiArrayAllocator;
 
 public class PaletteContainer<T> implements NbtConvertible {
 
-    private PackedIntegerArray storage;
+    private final static DynamicPalette.IDAllocatorProvider DEFAULT_CONTAINER = BiArrayAllocator::new;
+    private PaletteStorage storage;
     private DynamicPalette<T> palette;
     private final DynamicPalette.ValueConverter<T> valueConverter;
-    private final static int INITIAL_ELEMENT_BITS = 4;
-    private final static DynamicPalette.IDAllocatorProvider DEFAULT_CONTAINER = BiArrayAllocator::new;
 
     public PaletteContainer(int size, T nullObject, DynamicPalette.ValueConverter<T> valueConverter) {
-        storage = new PackedIntegerArray(INITIAL_ELEMENT_BITS, size);
+        storage = new EmptyPaletteStorage(size);
         palette = new DynamicPalette<>(0, DEFAULT_CONTAINER, valueConverter);
         this.valueConverter = valueConverter;
 
-        palette.recordAddition(nullObject);
+        palette.recordAddition(nullObject);     // 0 should always be the index of null data
     }
 
     public PaletteContainer(NbtCompound nbtCompound, DynamicPalette.ValueConverter<T> valueConverter) {
@@ -25,11 +26,15 @@ public class PaletteContainer<T> implements NbtConvertible {
         readFromNbt(nbtCompound);
     }
 
-    private void resize(int bits) {
+    private void resetBits(int bits) {
         if (bits != storage.getElementBits()) {
-            int[] data = new int[storage.getSize()];
-            storage.writePaletteIndices(data);
-            storage = new PackedIntegerArray(bits, storage.getSize(), data);
+            if (bits == 0) {
+                storage = new EmptyPaletteStorage(storage.getSize());
+            } else {
+                int[] data = new int[storage.getSize()];
+                storage.writePaletteIndices(data);
+                storage = new PackedIntegerArray(bits, storage.getSize(), data);
+            }
         }
     }
 
@@ -38,15 +43,15 @@ public class PaletteContainer<T> implements NbtConvertible {
         while (i >= (1 << bits)) {
             ++bits;
         }
-        resize(bits);
+        resetBits(bits);
     }
 
     public void shrink() {
         int bits = storage.getElementBits() - 1;
-        while (bits >= INITIAL_ELEMENT_BITS && palette.maxValue() < (1 << bits)) {
+        while (bits >= 0 && palette.maxValue() < (1 << bits)) {
             --bits;
         }
-        resize(bits + 1);
+        resetBits(bits + 1);
     }
 
     public void set(int index, T value) {
@@ -63,22 +68,21 @@ public class PaletteContainer<T> implements NbtConvertible {
 
     @Override
     public void readFromNbt(NbtCompound nbtCompound) {
-        NbtCompound nbtStorage = nbtCompound.getCompound("storage");
-        NbtCompound nbtPalette = nbtCompound.getCompound("palette");
-        storage = new PackedIntegerArray(nbtStorage.getInt("element_bits"), nbtStorage.getInt("size"),
-                nbtStorage.getLongArray("data"));
-        palette = new DynamicPalette<>(nbtPalette, DEFAULT_CONTAINER, valueConverter);
+        int elementBits = nbtCompound.getInt("element_bits");
+        storage = elementBits == 0 ? new EmptyPaletteStorage(nbtCompound.getInt("size")) :
+                new PackedIntegerArray(elementBits, nbtCompound.getInt("size"), nbtCompound.getLongArray("data"));
+        palette = new DynamicPalette<>(nbtCompound.getCompound("palette"), DEFAULT_CONTAINER, valueConverter);
     }
 
     @Override
     public void writeToNbt(NbtCompound nbtCompound) {
-        NbtCompound nbtStorage = new NbtCompound();
+        nbtCompound.putInt("size", storage.getSize());
+        if (storage.getElementBits() != 0) {
+            nbtCompound.putInt("element_bits", storage.getElementBits());
+            nbtCompound.putLongArray("data", storage.getData());
+        }
         NbtCompound nbtPalette = new NbtCompound();
-        nbtStorage.putInt("element_bits", storage.getElementBits());
-        nbtStorage.putInt("size", storage.getSize());
-        nbtStorage.putLongArray("data", storage.getData());
         palette.writeToNbt(nbtPalette);
-        nbtCompound.put("storage", nbtStorage);
         nbtCompound.put("palette", nbtPalette);
     }
 }
