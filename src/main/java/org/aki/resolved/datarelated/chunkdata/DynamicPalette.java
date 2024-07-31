@@ -1,16 +1,16 @@
-package org.aki.resolved.fluiddata.chunkdata;
+package org.aki.resolved.datarelated.chunkdata;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.collection.Int2ObjectBiMap;
-import org.aki.resolved.fluiddata.chunkdata.allocator.IdAllocator;
+import org.aki.resolved.datarelated.chunkdata.idallocator.IdAllocator;
 
 import java.util.function.Predicate;
 
 // a palette is a map by nature.
 public class DynamicPalette<T> implements NbtConvertible {
 
-    private Int2ObjectBiMap<T> palette;
+    private Int2ObjectBiMap<T> palette;     // todo this template should no longer be used since its poor implementation
     private IdAllocator counter;
     private final IDAllocatorProvider counterProvider;
     private final ValueConverter<T> valueConverter;           // this object links value objects to their nbt forms
@@ -36,13 +36,8 @@ public class DynamicPalette<T> implements NbtConvertible {
     }
 
     public int index(T object) {
-        if (palette.contains(object)) {
-            int id = palette.getRawId(object);
-            if (counter.count(id) > 0) {
-                return id;
-            }
-        }
-        return -1;
+        int id = palette.getRawId(object);
+        return id != -1 && counter.count(id) > 0 ? id : -1;
     }
 
     public void recordAddition(T object) {

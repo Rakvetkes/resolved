@@ -1,4 +1,4 @@
-package org.aki.resolved.fluiddata;
+package org.aki.resolved.datarelated;
 
 import org.aki.resolved.Registered;
 import org.ladysnake.cca.api.v3.chunk.ChunkComponentFactoryRegistry;

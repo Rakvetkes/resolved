@@ -1,21 +1,39 @@
-package org.aki.resolved.fluiddata.blockdata;
+package org.aki.resolved.datarelated.blockdata;
 
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.MathHelper;
 import org.aki.resolved.Registered;
+import org.aki.resolved.datarelated.chunkdata.NbtConvertible;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
-import java.util.LinkedList;
-import java.util.ListIterator;
-import java.util.Stack;
+import java.util.*;
 
-public class FluidLayerSet {
+public class FluidLayerSet implements Iterable<Constituent>, NbtConvertible, ListHelper.Copyable<FluidLayerSet> {
 
     private final LinkedList<FluidLayer> layers;
     private float totalVolume;
 
+    private FluidLayerSet(FluidLayerSet layerSet) {
+        layers = ListHelper.copy(layerSet.layers);
+        totalVolume = layerSet.totalVolume;
+    }
+
     public FluidLayerSet() {
         layers = new LinkedList<>();
         totalVolume = 0.0f;
+    }
+
+    public FluidLayerSet(FluidLayer layer) {
+        layers = new LinkedList<>();
+        totalVolume = 0.0f;
+        this.addFromTop(layer);
+    }
+
+    public FluidLayerSet(NbtCompound nbtCompound) {
+        layers = new LinkedList<>();
+        totalVolume = 0.0f;
+        readFromNbt(nbtCompound);
     }
 
     public float getVolume() {
@@ -111,7 +129,7 @@ public class FluidLayerSet {
             it2 = tempIt;
         }
         while (it2.hasNext()) {
-            it1.add(new FluidLayer(new FluidLayer.Constituent(Registered.CONSTITUENT_AIR, it2.next().getVolume())));
+            it1.add(new FluidLayer(new Constituent(Registered.CONSTITUENT_AIR, it2.next().getVolume())));
             // note here the volume per unit of air is assumed to be 1
         }
     }
@@ -161,34 +179,54 @@ public class FluidLayerSet {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof FluidLayerSet && hashCode() == o.hashCode();
+        return this == o || (o instanceof FluidLayerSet && layers.equals(((FluidLayerSet) o).layers));
     }
 
-    public void readFromArray(int[] consId, int[] amount) {
-        for (int i = 0; i < consId.length; ++i) {
-            this.addFromTop(new FluidLayer(new FluidLayer.Constituent(consId[i], CastHelper.intToFloat(amount[i]))));
-        }
+    @NotNull @Override
+    public Iterator<Constituent> iterator() {
+        return this.listIterator();
     }
 
-    public int getListLength() {
+    public ListIterator<Constituent> listIterator() {
+        return this.listIterator(0);
+    }
+
+    public ListIterator<Constituent> listIterator(int index) {
+        return new FluidLayerSetIterator(this, index);
+    }
+
+    public FluidLayerSet copy() {
+        return new FluidLayerSet(this);
+    }
+
+    public int getSize() {
         int listLength = 0;
         for (FluidLayer layer : layers) {
-            for (FluidLayer.Constituent constituent : layer) {
-                ++listLength;
-            }
+            listLength += layer.getSize();
         }
         return listLength;
     }
 
-    public void writeToArray(int[] consId, int[] amount) {
-        int i = 0;
-        for (FluidLayer layer : layers) {
-            for (FluidLayer.Constituent constituent : layer) {
-                consId[i] = constituent.consId();
-                amount[i] = CastHelper.floatToInt(constituent.amount());
-                ++i;
-            }
+    @Override
+    public void readFromNbt(NbtCompound nbtCompound) {
+        int[] consId = nbtCompound.getIntArray("constituents_id");
+        int[] amount = nbtCompound.getIntArray("amount");
+        for (int i = 0; i < consId.length; ++i) {
+            this.addFromTop(new FluidLayer(new Constituent(consId[i], CastHelper.intToFloat(amount[i]))));
         }
+    }
+
+    @Override
+    public void writeToNbt(NbtCompound nbtCompound) {
+        int size = this.getSize(), i = 0;
+        int[] consId = new int[size], amount = new int[size];
+        for (Constituent constituent : this) {
+            consId[i] = constituent.consId();
+            amount[i] = CastHelper.floatToInt(constituent.amount());
+            ++i;
+        }
+        nbtCompound.putIntArray("constituents_id", consId);
+        nbtCompound.putIntArray("amount", amount);
     }
 
     public static class CastHelper {
@@ -201,6 +239,110 @@ public class FluidLayerSet {
             byte4.putInt(0, f);
             return byte4.getFloat(0);
         }
+    }
+
+    public static class FluidLayerSetIterator implements ListIterator<Constituent> {
+
+        private final ListIterator<FluidLayer> it1;
+        private ListIterator<Constituent> it2;
+        private int index;
+
+        public FluidLayerSetIterator(FluidLayerSet layerSet) {
+            this(layerSet, 0);
+        }
+
+        public FluidLayerSetIterator(FluidLayerSet layerSet, int index) {
+            it1 = layerSet.layers.listIterator();
+            it2 = it1.hasNext() ? it1.next().listIterator() : null;
+            this.index = index;
+            while (index > 0) {
+                this.next();
+                --index;
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            return it1.hasNext() || (it2 != null && it2.hasNext());
+        }
+
+        @Override
+        public Constituent next() {
+            if (it2 == null) {
+                throw new NoSuchElementException();
+            }
+            while (!it2.hasNext() && it1.hasNext()) {
+                it2 = it1.next().listIterator();
+            }
+            if (it2.hasNext()) {
+                ++index;
+                return it2.next();
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return it1.hasPrevious() || (it2 != null && it2.hasPrevious());
+        }
+
+        @Override
+        public Constituent previous() {
+            if (it2 == null) {
+                throw new NoSuchElementException();
+            }
+            while (!it2.hasPrevious() && it1.hasPrevious()) {
+                FluidLayer layer = it1.previous();
+                it2 = layer.listIterator(layer.getSize());
+            }
+            if (it2.hasPrevious()) {
+                --index;
+                return it2.previous();
+            } else {
+                throw new NoSuchElementException();
+            }
+        }
+
+        @Override
+        public int nextIndex() {
+            return index;
+        }
+
+        @Override
+        public int previousIndex() {
+            return index - 1;
+        }
+
+        @Override
+        public void remove() {
+            if (it2 == null) {
+                throw new IllegalStateException();
+            } else {
+                it2.remove();
+            }
+        }
+
+        @Override
+        public void set(Constituent constituent) {
+            if (it2 == null) {
+                throw new IllegalStateException();
+            } else {
+                it2.set(constituent);
+            }
+        }
+
+        @Override
+        public void add(Constituent constituent) {
+            if (it2 == null) {
+                FluidLayer layer = new FluidLayer(constituent);
+                it1.add(layer);
+                it2 = layer.listIterator(1);
+            } else {
+                it2.add(constituent);
+            }
+        }
+
     }
 
 }

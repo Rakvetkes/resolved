@@ -1,20 +1,25 @@
-package org.aki.resolved.fluiddata.blockdata;
+package org.aki.resolved.datarelated.blockdata;
 
 import net.minecraft.util.math.MathHelper;
 import org.aki.resolved.Registered;
-import org.aki.resolved.fluiddata.blockdata.reaction.CompatibilityRegistry;
-import org.aki.resolved.fluiddata.blockdata.reaction.ConstituentRegistry;
+import org.aki.resolved.registries.CompatibilityRegistry;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-public class FluidLayer implements Iterable<FluidLayer.Constituent> {
+public class FluidLayer implements Iterable<Constituent>, ListHelper.Copyable<FluidLayer> {
 
     private final LinkedList<Constituent> constituents;
     private float totalVolume;
     private float density;
+
+    private FluidLayer(FluidLayer layer) {
+        constituents = ListHelper.copy(layer.constituents);
+        totalVolume = layer.totalVolume;
+        density = layer.density;
+    }
 
     private FluidLayer() {
         constituents = new LinkedList<>();
@@ -41,7 +46,7 @@ public class FluidLayer implements Iterable<FluidLayer.Constituent> {
         boolean flag = false;
         while (!flag && it.hasNext()) {
             Constituent j = it.next();
-            if (j.consId == constituent.consId) {
+            if (j.consId() == constituent.consId()) {
                 it.set(j.combine(constituent));
                 flag = true;
             } else if (consComparator.compare(j.consId(), constituent.consId(), j.getDensity(), density)) {
@@ -73,8 +78,8 @@ public class FluidLayer implements Iterable<FluidLayer.Constituent> {
         }
     }
 
-    public ListIterator<Constituent> getIterator() {
-        return constituents.listIterator();
+    public int getSize() {
+        return constituents.size();
     }
 
     public float getVolume() {
@@ -115,11 +120,6 @@ public class FluidLayer implements Iterable<FluidLayer.Constituent> {
         }
     }
 
-    @NotNull @Override
-    public Iterator<Constituent> iterator() {
-        return constituents.listIterator();
-    }
-
     @Override
     public int hashCode() {
         return constituents.hashCode();
@@ -127,30 +127,24 @@ public class FluidLayer implements Iterable<FluidLayer.Constituent> {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof FluidLayer && hashCode() == o.hashCode();
+        return this == o || (o instanceof FluidLayer && constituents.equals(((FluidLayer) o).constituents));
     }
 
-    public record Constituent(int consId, float amount) {
+    @NotNull @Override
+    public Iterator<Constituent> iterator() {
+        return this.listIterator();
+    }
 
-        public float getVolume() {
-            return ConstituentRegistry.REGISTRY.getAttributes(consId).volume() * amount;
-        }
+    public ListIterator<Constituent> listIterator() {
+        return this.listIterator(0);
+    }
 
-        public float getDensity() {
-            return ConstituentRegistry.REGISTRY.getAttributes(consId).density();
-        }
+    public ListIterator<Constituent> listIterator(int index) {
+        return constituents.listIterator(index);
+    }
 
-        public Constituent sliceByProportion(float point) {
-            return new Constituent(consId, point * amount);
-        }
-
-        public Constituent combine(Constituent constituent) {
-            if (constituent.consId != this.consId) {
-                throw new IllegalArgumentException();
-            }
-            return new Constituent(consId, this.amount + constituent.amount);
-        }
-
+    public FluidLayer copy() {
+        return new FluidLayer(this);
     }
 
 }

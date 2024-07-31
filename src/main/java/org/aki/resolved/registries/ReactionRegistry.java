@@ -1,8 +1,9 @@
-package org.aki.resolved.fluiddata.blockdata.reaction;
+package org.aki.resolved.registries;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
-import org.aki.resolved.fluiddata.blockdata.ListHelper;
+import org.aki.resolved.datarelated.blockdata.ListHelper;
+import org.aki.resolved.datarelated.reaction.Reaction;
 
 import java.util.LinkedList;
 import java.util.ListIterator;

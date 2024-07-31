@@ -1,4 +1,4 @@
-package org.aki.resolved.fluiddata.chunkdata.allocator;
+package org.aki.resolved.datarelated.chunkdata.idallocator;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 

@@ -6,7 +6,7 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.minecraft.client.render.RenderLayer;
-import org.aki.resolved.fluidblock.ResolvedFluidRenderer;
+import org.aki.resolved.blockrelated.ResolvedFluidRenderer;
 
 @Environment(EnvType.CLIENT)
 public class ResolvedClient implements ClientModInitializer {

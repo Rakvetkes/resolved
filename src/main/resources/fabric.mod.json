@@ -12,7 +12,7 @@
   "environment": "*",
   "entrypoints": {
     "cardinal-components": [
-      "org.aki.resolved.fluiddata.FluidChunkDataInitializer"
+      "org.aki.resolved.datarelated.FluidChunkDataInitializer"
     ],
     "client": [
       "org.aki.resolved.ResolvedClient"

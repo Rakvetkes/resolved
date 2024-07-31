@@ -1,4 +1,4 @@
-package org.aki.resolved.fluidblock;
+package org.aki.resolved.blockrelated;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -11,6 +11,7 @@ import net.minecraft.world.BlockRenderView;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import org.aki.resolved.Registered;
+import org.aki.resolved.datarelated.LayerSetHelper;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
@@ -24,7 +25,7 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
     public int getFluidColor(@Nullable BlockRenderView view, @Nullable BlockPos pos, FluidState state) {
         if (view == null) return 0x0;
         Chunk chunk = getWorld(view).getChunk(ChunkSectionPos.getSectionCoord(pos.getX()), ChunkSectionPos.getSectionCoord(pos.getZ()));
-        return Registered.FLUID_DATA.get(chunk).getFluidData(pos.getX() & 15, pos.getY(), pos.getZ() & 15).getColor();
+        return LayerSetHelper.getColor(Registered.FLUID_DATA.get(chunk).getFluidData(pos.getX() & 15, pos.getY(), pos.getZ() & 15));
     }
 
     public static World getWorld(BlockRenderView view) {

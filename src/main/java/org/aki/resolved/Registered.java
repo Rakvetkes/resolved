@@ -7,11 +7,11 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-import org.aki.resolved.fluidblock.ResolvedFluid;
-import org.aki.resolved.fluidblock.ResolvedFluidBlock;
-import org.aki.resolved.fluiddata.FluidChunkData;
-import org.aki.resolved.fluiddata.blockdata.reaction.CompatibilityRegistry;
-import org.aki.resolved.fluiddata.blockdata.reaction.ConstituentRegistry;
+import org.aki.resolved.blockrelated.ResolvedFluid;
+import org.aki.resolved.blockrelated.ResolvedFluidBlock;
+import org.aki.resolved.datarelated.FluidChunkData;
+import org.aki.resolved.registries.CompatibilityRegistry;
+import org.aki.resolved.registries.ConstituentRegistry;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 

@@ -1,10 +1,10 @@
-package org.aki.resolved.fluiddata.chunkdata;
+package org.aki.resolved.datarelated.chunkdata;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.collection.EmptyPaletteStorage;
 import net.minecraft.util.collection.PackedIntegerArray;
 import net.minecraft.util.collection.PaletteStorage;
-import org.aki.resolved.fluiddata.chunkdata.allocator.BiArrayAllocator;
+import org.aki.resolved.datarelated.chunkdata.idallocator.BiArrayAllocator;
 
 public class PaletteContainer<T> implements NbtConvertible {
 
@@ -55,8 +55,13 @@ public class PaletteContainer<T> implements NbtConvertible {
     }
 
     public void set(int index, T value) {
-        palette.recordRemoval(storage.get(index));
-        palette.recordAddition(value);
+        int originalId = storage.get(index);
+        if (originalId != 0) {
+            palette.recordRemoval(storage.get(index));
+        }
+        if (palette.index(value) != 0) {
+            palette.recordAddition(value);
+        }
         int i = palette.index(value);
         expand(i);
         storage.set(index, i);

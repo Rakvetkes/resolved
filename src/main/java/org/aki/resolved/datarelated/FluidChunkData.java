@@ -1,10 +1,13 @@
-package org.aki.resolved.fluiddata;
+package org.aki.resolved.datarelated;
 
 import it.unimi.dsi.fastutil.ints.*;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.chunk.Chunk;
-import org.aki.resolved.fluiddata.chunkdata.PaletteContainer;
+import org.aki.resolved.datarelated.blockdata.FluidLayerSet;
+import org.aki.resolved.datarelated.chunkdata.DynamicPalette;
+import org.aki.resolved.datarelated.chunkdata.PaletteContainer;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.Component;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
@@ -15,7 +18,7 @@ import java.util.List;
 public class FluidChunkData implements Component, AutoSyncedComponent {
 
     private static final int SECTION_SIZE = 1 << 4 * 3;
-    private final PaletteContainer<FluidBlockData>[] sectionsData;
+    private final PaletteContainer<FluidLayerSet>[] sectionsData;
     private IntLinkedOpenHashSet activeReactions;
     private Int2IntLinkedOpenHashMap existingConstituents;
     private final int bottomY;
@@ -28,17 +31,18 @@ public class FluidChunkData implements Component, AutoSyncedComponent {
         activeReactions = new IntLinkedOpenHashSet();
         existingConstituents = new Int2IntLinkedOpenHashMap();
         bottomY = chunk.getBottomY();
-        FluidBlockData nullData = FluidBlockData.getNullData();
+        FluidLayerSet nullData = LayerSetHelper.getNull();
         for (int i = 0; i < sectionsData.length; ++i) {
-            sectionsData[i] = new PaletteContainer<>(SECTION_SIZE, nullData, FluidBlockData.SimpleConverter.INSTANCE);
+            sectionsData[i] = new PaletteContainer<>(SECTION_SIZE, nullData, SimpleConverter.INSTANCE);
         }
     }
 
-    public @NotNull FluidBlockData getFluidData(int i, int j, int k) {
+    public @NotNull FluidLayerSet getFluidData(int i, int j, int k) {
         return sectionsData[(j - bottomY) >> 4].get(computeIndex(i, (j - bottomY) & 15, k));
     }
 
-    public void setFluidData(int i, int j, int k, FluidBlockData data) {
+    public void setFluidData(int i, int j, int k, FluidLayerSet data) {
+        // todo update constituent existence marks & available reaction marks
         sectionsData[(j - bottomY) >> 4].set(computeIndex(i, (j - bottomY) & 15, k), data);
     }
 
@@ -50,40 +54,13 @@ public class FluidChunkData implements Component, AutoSyncedComponent {
         return activeReactions;
     }
 
-    public boolean checkExistence(int consId) {
-        return existingConstituents.containsKey(consId);
-    }
-
-    public void markActive(int reactionId) {
-        activeReactions.add(reactionId);
-    }
-
-    public void markInactive(int reactionId) {
-        activeReactions.remove(reactionId);
-    }
-
-    public void markExistenceInBlock(int consId) {
-        if (existingConstituents.containsKey(consId)) {
-            existingConstituents.addTo(consId, 1);
-        } else {
-            existingConstituents.put(consId, 1);
-        }
-    }
-
-    public void markDisappearanceInBlock(int consId) {
-        existingConstituents.addTo(consId, -1);
-        if (existingConstituents.get(consId) == 0) {
-            existingConstituents.remove(consId);
-        }
-    }
-
     @Override
     public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
         activeReactions = new IntLinkedOpenHashSet(tag.getIntArray("active_reactions"));
         existingConstituents = new Int2IntLinkedOpenHashMap(tag.getIntArray("existing_constituents"),
                 tag.getIntArray("existing_constituent_frequency"));
         for (int i = 0; i < sectionsData.length; ++i) {
-            sectionsData[i] = new PaletteContainer<>(tag.getCompound(String.format("%d", i)), FluidBlockData.SimpleConverter.INSTANCE);
+            sectionsData[i] = new PaletteContainer<>(tag.getCompound(String.format("%d", i)), SimpleConverter.INSTANCE);
         }
     }
 
@@ -99,4 +76,20 @@ public class FluidChunkData implements Component, AutoSyncedComponent {
             tag.put(String.format("%d", i), nbtCompound);
         }
     }
+
+    private static class SimpleConverter implements DynamicPalette.ValueConverter<FluidLayerSet> {
+        public static final SimpleConverter INSTANCE = new SimpleConverter();
+        private SimpleConverter() {}
+        @Override
+        public FluidLayerSet getValue(NbtElement nbtElement) {
+            return new FluidLayerSet((NbtCompound) nbtElement);
+        }
+        @Override
+        public NbtElement getNbt(FluidLayerSet value) {
+            NbtCompound nbtCompound = new NbtCompound();
+            value.writeToNbt(nbtCompound);
+            return nbtCompound;
+        }
+    }
+
 }

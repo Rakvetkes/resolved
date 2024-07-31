@@ -1,9 +1,22 @@
-package org.aki.resolved.fluiddata.blockdata;
+package org.aki.resolved.datarelated.blockdata;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
 public class ListHelper {
+
+    public static <E extends Copyable<E>> LinkedList<E> copy(LinkedList<E> list) {
+        LinkedList<E> newList = new LinkedList<>();
+        for (E e : list) {
+            newList.add(e.copy());
+        }
+        return newList;
+    }
+
+    public interface Copyable<E> {
+        E copy();
+    }
 
     public interface FloatComparator {
         boolean compare(float a, float b);

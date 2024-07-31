@@ -1,4 +1,4 @@
-package org.aki.resolved.fluidblock;
+package org.aki.resolved.blockrelated;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;

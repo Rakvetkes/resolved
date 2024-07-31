@@ -9,8 +9,8 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.*;
 import net.minecraft.world.gen.chunk.BlendingData;
 import org.aki.resolved.Registered;
-import org.aki.resolved.fluiddata.FluidBlockData;
-import org.aki.resolved.fluiddata.blockdata.reaction.ConstituentRegistry;
+import org.aki.resolved.datarelated.LayerSetHelper;
+import org.aki.resolved.registries.ConstituentRegistry;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,7 +30,7 @@ public abstract class MixinProtoChunk extends Chunk {
     public void insertedCode1(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir, int i, int j, int k, int l, ChunkSection chunkSection, boolean bl, int m, int n, int o) {
         if (ConstituentRegistry.REGISTRY.get(state.getFluidState().getFluid()) > 0) {
             // todo this should be adjusted if there's a waterlogged block
-            Registered.FLUID_DATA.get(this).setFluidData(m, j, o, FluidBlockData.getFromFluid(state.getFluidState().getFluid()));
+            Registered.FLUID_DATA.get(this).setFluidData(m, j, o, LayerSetHelper.getFromConstituent(state.getFluidState().getFluid()));
         }
     }
 

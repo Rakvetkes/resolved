@@ -1,4 +1,4 @@
-package org.aki.resolved.fluiddata.blockdata.reaction;
+package org.aki.resolved.registries;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.collection.Int2ObjectBiMap;
