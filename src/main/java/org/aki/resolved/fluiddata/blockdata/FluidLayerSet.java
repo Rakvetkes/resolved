@@ -1,7 +1,7 @@
 package org.aki.resolved.fluiddata.blockdata;
 
 import net.minecraft.util.math.MathHelper;
-import org.jetbrains.annotations.Contract;
+import org.aki.resolved.Registered;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
@@ -11,12 +11,21 @@ import java.util.Stack;
 public class FluidLayerSet {
 
     private final LinkedList<FluidLayer> layers;
+    private float totalVolume;
 
     public FluidLayerSet() {
         layers = new LinkedList<>();
+        totalVolume = 0.0f;
+    }
+
+    public float getVolume() {
+        return totalVolume;
     }
 
     private void add(FluidLayer layer, ListIterator<FluidLayer> it, ListHelper.FloatComparator comparator) {
+        if (!layer.isAir()) {
+            totalVolume += layer.getVolume();
+        }
         while (it.hasNext()) {
             FluidLayer currentLayer = it.next();
             if (currentLayer.isCompatible(layer)) {
@@ -40,7 +49,7 @@ public class FluidLayerSet {
     }
 
     public void fold() {
-        ListIterator<FluidLayer> it = layers.listIterator();    // note this goes from top to bottom
+        ListIterator<FluidLayer> it = new ListHelper.ReversedListIterator<>(layers);    // note this goes from bottom to top
         if (!it.hasNext()) {
             return;
         }
@@ -54,40 +63,56 @@ public class FluidLayerSet {
                 oldLayer = currentLayer;
             }
         }
+        while (it.hasPrevious()) {
+            FluidLayer layer = it.previous();
+            if (layer.isAir()) {
+                it.remove();
+            } else {
+                break;
+            }
+        }
     }
 
     private static void align(FluidLayerSet layerSet1, FluidLayerSet layerSet2) {
         ListIterator<FluidLayer> it1 = new ListHelper.ReversedListIterator<>(layerSet1.layers);
         ListIterator<FluidLayer> it2 = new ListHelper.ReversedListIterator<>(layerSet2.layers);
         ListIterator<FluidLayer> tempIt;
-        if (!it1.hasNext() || !it2.hasNext()) {
-            return;
-        }
-        FluidLayer layer1 = it1.next(), layer2 = it2.next(), temp;
-        while (true) {
-            if (layer1.getVolume() > layer2.getVolume()) {
-                temp = layer1;
-                layer1 = layer2;
-                layer2 = temp;
-                tempIt = it1;
-                it1 = it2;
-                it2 = tempIt;
-            }
-            if (MathHelper.approximatelyEquals(layer1.getVolume(), layer2.getVolume())) {
-                if (!it1.hasNext() || !it2.hasNext()) {
-                    return;
+        if (it1.hasNext() && it2.hasNext()) {
+            FluidLayer layer1 = it1.next(), layer2 = it2.next(), temp;
+            while (true) {
+                if (layer1.getVolume() > layer2.getVolume()) {
+                    temp = layer1;
+                    layer1 = layer2;
+                    layer2 = temp;
+                    tempIt = it1;
+                    it1 = it2;
+                    it2 = tempIt;
                 }
-                layer1 = it1.next();
-                layer2 = it2.next();
-            } else if (layer1.getVolume() < layer2.getVolume()) {
-                it2.set(layer2.sliceByVolume(layer1.getVolume()));
-                it2.add(layer2);
-                if (!it1.hasNext()) {
-                    return;
-                } else {
+                if (MathHelper.approximatelyEquals(layer1.getVolume(), layer2.getVolume())) {
+                    if (!it1.hasNext() || !it2.hasNext()) {
+                        break;
+                    }
                     layer1 = it1.next();
+                    layer2 = it2.next();
+                } else if (layer1.getVolume() < layer2.getVolume()) {
+                    it2.set(layer2.sliceByVolume(layer1.getVolume()));
+                    it2.add(layer2);
+                    if (!it1.hasNext()) {
+                        break;
+                    } else {
+                        layer1 = it1.next();
+                    }
                 }
             }
+        }
+        if (it1.hasNext()) {
+            tempIt = it1;
+            it1 = it2;
+            it2 = tempIt;
+        }
+        while (it2.hasNext()) {
+            it1.add(new FluidLayer(new FluidLayer.Constituent(Registered.CONSTITUENT_AIR, it2.next().getVolume())));
+            // note here the volume per unit of air is assumed to be 1
         }
     }
 
@@ -97,17 +122,35 @@ public class FluidLayerSet {
         ListIterator<FluidLayer> it2 = new ListHelper.ReversedListIterator<>(layerSet2.layers);
         Stack<FluidLayer> stack1 = new Stack<>();
         Stack<FluidLayer> stack2 = new Stack<>();
-        while (it1.hasNext() && it2.hasNext()) {
+        while (it1.hasNext()/* && it2.hasNext()*/) {
             FluidLayer layer1 = it1.next();
             FluidLayer layer2 = it2.next();
             stack1.push(layer2.sliceByVolume(exchangeRate));
             stack2.push(layer1.sliceByVolume(exchangeRate));
+            layerSet1.totalVolume -= layer1.getVolume() * exchangeRate;
+            layerSet2.totalVolume -= layer2.getVolume() * exchangeRate;
         }
-        layerSet1.fold();
-        layerSet2.fold();
         while (!stack1.empty()) {
             layerSet1.addFromBottom(stack1.pop());
             layerSet2.addFromBottom(stack2.pop());
+        }
+        layerSet1.fold();
+        layerSet2.fold();
+    }
+
+    public static void exchangeVertical(FluidLayerSet above, FluidLayerSet beneath) {
+        ListIterator<FluidLayer> it1 = new ListHelper.ReversedListIterator<>(above.layers);
+        final float blockVolume = 1000.0f;
+        while (it1.hasNext() && beneath.getVolume() < blockVolume) {
+            FluidLayer layer = it1.next();
+            if (beneath.getVolume() + layer.getVolume() > blockVolume) {
+                beneath.addFromTop(layer.sliceByVolume(blockVolume - beneath.getVolume()));
+                above.totalVolume -= blockVolume - beneath.getVolume();
+            } else {
+                beneath.addFromTop(layer);
+                above.totalVolume -= layer.getVolume();
+                it1.remove();
+            }
         }
     }
 

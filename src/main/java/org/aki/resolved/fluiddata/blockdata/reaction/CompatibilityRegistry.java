@@ -1,31 +1,31 @@
 package org.aki.resolved.fluiddata.blockdata.reaction;
 
-import net.minecraft.util.collection.Int2ObjectBiMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 public class CompatibilityRegistry {
 
-    private final Int2ObjectBiMap<Object> registry;
+    private final Int2IntOpenHashMap registry;
     private int classCount;
     public static final CompatibilityRegistry REGISTRY = new CompatibilityRegistry();
 
     private CompatibilityRegistry() {
-        registry = Int2ObjectBiMap.create(1);
+        registry = new Int2IntOpenHashMap();
         classCount = 0;
     }
 
-    public void createClass(Object constituent) {
+    public void createClass(int constituent) {
         registry.put(constituent, ++classCount);
     }
 
-    public void register(Object constituent, Object compatible) {
-        if (!registry.contains(compatible)) {
+    public void register(int constituent, int compatible) {
+        if (!registry.containsKey(compatible)) {
             throw new IllegalArgumentException();
         }
-        registry.put(constituent, registry.getRawId(compatible));
+        registry.put(constituent, registry.get(compatible));
     }
 
-    public boolean checkCompatibility(Object constituentA, Object constituentB) {
-        return registry.getRawId(constituentA) == registry.getRawId(constituentB);
+    public boolean checkCompatibility(int constituentA, int constituentB) {
+        return registry.get(constituentA) == registry.get(constituentB);
     }
 
 }

@@ -16,7 +16,7 @@ public class ConstituentRegistry {
 
     public int register(Object constituent, ConstituentAttributes attributes) {
         if (!registry.contains(constituent)) {
-            int newKey = registry.size() + 1;
+            int newKey = registry.size();
             registry.put(constituent, newKey);
             attributeRegistry.put(newKey, attributes);
             return newKey;

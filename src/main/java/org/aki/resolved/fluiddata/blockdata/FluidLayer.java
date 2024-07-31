@@ -1,6 +1,7 @@
 package org.aki.resolved.fluiddata.blockdata;
 
 import net.minecraft.util.math.MathHelper;
+import org.aki.resolved.Registered;
 import org.aki.resolved.fluiddata.blockdata.reaction.CompatibilityRegistry;
 import org.aki.resolved.fluiddata.blockdata.reaction.ConstituentRegistry;
 import org.jetbrains.annotations.NotNull;
@@ -85,11 +86,15 @@ public class FluidLayer implements Iterable<FluidLayer.Constituent> {
     }
 
     public boolean isCompatible(Constituent constituent) {
-        return CompatibilityRegistry.REGISTRY.checkCompatibility(constituents.getFirst(), constituent);
+        return CompatibilityRegistry.REGISTRY.checkCompatibility(constituents.getFirst().consId(), constituent.consId());
     }
 
     public boolean isCompatible(FluidLayer layer) {
         return layer.isCompatible(constituents.getFirst());
+    }
+
+    public boolean isAir() {
+        return constituents.getFirst().consId() == Registered.CONSTITUENT_AIR;
     }
 
     public FluidLayer sliceByVolume(float volume) {

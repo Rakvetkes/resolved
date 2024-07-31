@@ -28,7 +28,7 @@ public abstract class MixinProtoChunk extends Chunk {
 
     @Inject(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ChunkSection;setBlockState(IIILnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"), locals = LocalCapture.CAPTURE_FAILHARD)
     public void insertedCode1(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir, int i, int j, int k, int l, ChunkSection chunkSection, boolean bl, int m, int n, int o) {
-        if (ConstituentRegistry.REGISTRY.get(state.getFluidState().getFluid()) != -1) {
+        if (ConstituentRegistry.REGISTRY.get(state.getFluidState().getFluid()) > 0) {
             // todo this should be adjusted if there's a waterlogged block
             Registered.FLUID_DATA.get(this).setFluidData(m, j, o, FluidBlockData.getFromFluid(state.getFluidState().getFluid()));
         }
@@ -36,7 +36,7 @@ public abstract class MixinProtoChunk extends Chunk {
 
     @Redirect(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ChunkSection;setBlockState(IIILnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"))
     public BlockState insertedCode2(ChunkSection instance, int x, int y, int z, BlockState state) {
-        if (ConstituentRegistry.REGISTRY.get(state.getFluidState().getFluid()) != -1) {
+        if (ConstituentRegistry.REGISTRY.get(state.getFluidState().getFluid()) > 0) {
             // todo this should be adjusted if there's a waterlogged block
             state = Registered.RESOLVED_FLUID_BLOCK.getDefaultState();
         }
