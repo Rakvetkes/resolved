@@ -1,8 +1,8 @@
 package org.aki.resolved.datarelated.chunkdata;
 
+import com.google.common.collect.HashBiMap;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.collection.Int2ObjectBiMap;
 import org.aki.resolved.datarelated.chunkdata.idallocator.IdAllocator;
 
 import java.util.function.Predicate;
@@ -10,20 +10,21 @@ import java.util.function.Predicate;
 // a palette is a map by nature.
 public class DynamicPalette<T> implements NbtConvertible {
 
-    private Int2ObjectBiMap<T> palette;     // todo this template should no longer be used since its poor implementation
+    private HashBiMap<Integer, T> palette;
     private IdAllocator counter;
     private final IDAllocatorProvider counterProvider;
     private final ValueConverter<T> valueConverter;           // this object links value objects to their nbt forms
 
-    private DynamicPalette(Int2ObjectBiMap<T> palette, IdAllocator counter, IDAllocatorProvider counterProvider, ValueConverter<T> valueConverter) {
+    private DynamicPalette(HashBiMap<Integer, T> palette, IdAllocator counter, IDAllocatorProvider counterProvider, ValueConverter<T> valueConverter) {
         this.palette = palette;
         this.counter = counter;
         this.counterProvider = counterProvider;
         this.valueConverter = valueConverter;
+
     }
 
     public DynamicPalette(int bits, IDAllocatorProvider counterProvider, ValueConverter<T> valueConverter) {
-        this.palette = Int2ObjectBiMap.create(1 << bits);
+        this.palette = HashBiMap.create(1 << bits);
         this.counter = counterProvider.createIDAllocator();
         this.counterProvider = counterProvider;
         this.valueConverter = valueConverter;
@@ -36,15 +37,15 @@ public class DynamicPalette<T> implements NbtConvertible {
     }
 
     public int index(T object) {
-        int id = palette.getRawId(object);
-        return id != -1 && counter.count(id) > 0 ? id : -1;
+        Integer id = palette.inverse().get(object);
+        return id != null && counter.count(id) > 0 ? id : -1;
     }
 
     public void recordAddition(T object) {
         int id = index(object);
         if (id == -1) {
             id = counter.newId();
-            palette.put(object, id);
+            palette.put(id, object);
         }
         counter.put(id);
     }
@@ -77,12 +78,12 @@ public class DynamicPalette<T> implements NbtConvertible {
     @Override
     public void readFromNbt(NbtCompound nbtCompound) {
         int maxValue = nbtCompound.getInt("maxValue");
-        this.palette = Int2ObjectBiMap.create(maxValue + 1);
+        this.palette = HashBiMap.create(maxValue + 1);
         this.counter = counterProvider.createIDAllocator();
         for (int i = 0; i <= maxValue; ++i) {
             if (nbtCompound.contains(String.format("%d", i))) {
                 NbtCompound nbtItem = nbtCompound.getCompound(String.format("%d", i));
-                this.palette.put(valueConverter.getValue(nbtItem.get("data")), i);
+                this.palette.put(i, valueConverter.getValue(nbtItem.get("data")));
                 this.counter.put(i, nbtItem.getInt("count"));
             }
         }
@@ -106,7 +107,7 @@ public class DynamicPalette<T> implements NbtConvertible {
     }
 
     public DynamicPalette<T> copy() {
-        return new DynamicPalette<>(palette.copy(), counter.copy(), counterProvider, valueConverter);
+        return new DynamicPalette<>(HashBiMap.create(palette), counter.copy(), counterProvider, valueConverter);
     }
 
     public interface IDAllocatorProvider {
