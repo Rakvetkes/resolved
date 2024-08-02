@@ -1,33 +1,36 @@
 package org.aki.resolved.registries;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import org.aki.resolved.datarelated.blockdata.ListHelper;
-import org.aki.resolved.datarelated.reaction.Reaction;
+import org.aki.resolved.datarelated.reaction.InnerReaction;
+import org.aki.resolved.datarelated.reaction.SurfaceReaction;
+import org.aki.resolved.datarelated.reaction.ReagentCollection;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-public class ReactionRegistry {
+public class ReactionRegistry<T extends ReagentCollection> {
 
-    private final Int2ObjectOpenHashMap<Reaction> registry;
-    private final Int2ObjectOpenHashMap<LinkedList<Reaction>> searchList;
-    public static final ReactionRegistry REGISTRY = new ReactionRegistry();
+    private final Int2ObjectOpenHashMap<T> registry;
+    private final Int2ObjectOpenHashMap<LinkedList<T>> searchList;
+    public static final ReactionRegistry<InnerReaction> INNER_REACTION_REGISTRY = new ReactionRegistry<>();
+    public static final ReactionRegistry<SurfaceReaction> SURFACE_REACTION_REGISTRY = new ReactionRegistry<>();
 
     private ReactionRegistry() {
         registry = new Int2ObjectOpenHashMap<>();
         searchList = new Int2ObjectOpenHashMap<>();
     }
 
-    public int register(Reaction reaction) {
+    public int register(T reaction) {
         int newKey = registry.size() + 1;
         registry.put(newKey, reaction);
-        for (IntIterator it = reaction.getReagentIterator(); it.hasNext();) {
-            int consId = it.nextInt();
-            if (!searchList.containsKey(consId)) {
+        for (Iterator<Integer> it = reaction.getReagentIterator(); it.hasNext();) {
+            int consId = it.next();
+            if (searchList.containsKey(consId)) {
                 searchList.get(consId).add(reaction);
             } else {
-                LinkedList<Reaction> list = new LinkedList<>();
+                LinkedList<T> list = new LinkedList<>();
                 searchList.put(consId, list);
                 list.add(reaction);
             }
@@ -35,12 +38,13 @@ public class ReactionRegistry {
         return newKey;
     }
 
-    public Reaction get(int key) {
+    public T get(int key) {
         return registry.get(key);
     }
 
-    public ListIterator<Reaction> getCandidateIterator(int consId) {
-        return searchList.containsKey(consId) ? searchList.get(consId).listIterator() : new ListHelper.NullListIterator<>();
+    public ListIterator<T> getCandidateIterator(int consId) {
+        return searchList.containsKey(consId) ? searchList.get(consId).listIterator()
+                : new ListHelper.NullListIterator<>();
     }
 
 }
