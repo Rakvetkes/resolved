@@ -22,7 +22,7 @@ public class Registered {
     public static final Block RESOLVED_FLUID_BLOCK;
 
     public static final ConstituentRegistry.ConstituentAttributes NULL_ATTRIBUTE;
-    public static final int CONSTITUENT_AIR;
+    public static final int CONSTITUENT_AIR;            // it's supposed that nothing is compatible with air.
     public static final int CONSTITUENT_WATER;          // todo springs are broken now
     public static final int CONSTITUENT_LAVA;
 

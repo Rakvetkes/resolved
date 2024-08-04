@@ -1,176 +1,192 @@
 package org.aki.resolved.layer;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.MathHelper;
 import org.aki.resolved.Registered;
 import org.aki.resolved.chunk.NbtConvertible;
-import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-public class FluidLayerSet implements Iterable<Constituent>, NbtConvertible, ListHelper.Copyable<FluidLayerSet> {
+public class FluidLayerSet implements NbtConvertible {
 
-    private final LinkedList<FluidLayer> layers;
-    private float totalVolume;
+    public static final float FULL_VOLUME = 1000.0f;
+    public static final FluidLayerSet NULL_LAYER_SET = new FluidLayerSet(Registered.CONSTITUENT_AIR);
+    protected final LinkedList<FluidLayer> layers;
 
-    private FluidLayerSet(FluidLayerSet layerSet) {
-        layers = ListHelper.copy(layerSet.layers);
-        totalVolume = layerSet.totalVolume;
+    protected FluidLayerSet(LinkedList<FluidLayer> layers) {
+        this.layers = layers;
     }
 
-    public FluidLayerSet() {
-        layers = new LinkedList<>();
-        totalVolume = 0.0f;
+    public FluidLayerSet(FluidLayerSet layerSet) {
+        this(new LinkedList<>());
+        for (FluidLayer layer : layerSet.layers) {
+            this.layers.add(new FluidLayer(layer));
+        }
     }
 
-    public FluidLayerSet(FluidLayer layer) {
-        layers = new LinkedList<>();
-        totalVolume = 0.0f;
-        this.addFromTop(layer);
+    public FluidLayerSet(int consId) {
+        this(new LinkedList<>());
+        // todo
     }
 
     public FluidLayerSet(NbtCompound nbtCompound) {
-        layers = new LinkedList<>();
-        totalVolume = 0.0f;
+        this(new LinkedList<>());
         readFromNbt(nbtCompound);
     }
 
-    public float getVolume() {
-        return totalVolume;
+    public FluidLayer getTopLayer() {
+        return layers.getFirst().getImmutable();
     }
 
-    private void add(FluidLayer layer, ListIterator<FluidLayer> it, ListHelper.FloatComparator comparator) {
-        if (!layer.isAir()) {
-            totalVolume += layer.getVolume();
-        }
-        while (it.hasNext()) {
-            FluidLayer currentLayer = it.next();
-            if (currentLayer.isCompatible(layer)) {
-                currentLayer.combine(layer);
-                return;
-            } else if (comparator.compare(currentLayer.getDensity(), layer.getDensity())) {
-                it.previous();
-                it.add(layer);
-                return;
-            }
-        }
-        it.add(layer);
+    public FluidLayer getBottomLayer() {
+        return layers.getLast().getImmutable();
     }
 
-    public void addFromTop(FluidLayer layer) {
-        add(layer, layers.listIterator(), (a, b) -> a > b);
-    }
-
-    public void addFromBottom(FluidLayer layer) {
-        add(layer, new ListHelper.ReversedListIterator<>(layers), (a, b) -> a <= b);
-    }
-
-    public void fold() {
-        ListIterator<FluidLayer> it = new ListHelper.ReversedListIterator<>(layers);    // note this goes from bottom to top
-        if (!it.hasNext()) {
-            return;
-        }
-        FluidLayer oldLayer = it.next();
-        while (it.hasNext()) {
-            FluidLayer currentLayer = it.next();
-            if (oldLayer.isCompatible(currentLayer)) {
-                oldLayer.combine(currentLayer);
-                it.remove();
-            } else {
-                oldLayer = currentLayer;
-            }
-        }
-        while (it.hasPrevious()) {
-            FluidLayer layer = it.previous();
-            if (layer.isAir()) {
-                it.remove();
-            } else {
-                break;
-            }
+    public void forEachLayer(Consumer<FluidLayer> consumer) {
+        for (FluidLayer layer : layers) {
+            consumer.accept(layer.getImmutable());
         }
     }
 
-    private static void align(FluidLayerSet layerSet1, FluidLayerSet layerSet2) {
-        ListIterator<FluidLayer> it1 = new ListHelper.ReversedListIterator<>(layerSet1.layers);
-        ListIterator<FluidLayer> it2 = new ListHelper.ReversedListIterator<>(layerSet2.layers);
-        ListIterator<FluidLayer> tempIt;
-        if (it1.hasNext() && it2.hasNext()) {
-            FluidLayer layer1 = it1.next(), layer2 = it2.next(), temp;
-            while (true) {
-                if (layer1.getVolume() > layer2.getVolume()) {
-                    temp = layer1;
-                    layer1 = layer2;
-                    layer2 = temp;
-                    tempIt = it1;
-                    it1 = it2;
-                    it2 = tempIt;
-                }
-                if (MathHelper.approximatelyEquals(layer1.getVolume(), layer2.getVolume())) {
-                    if (!it1.hasNext() || !it2.hasNext()) {
-                        break;
+
+    public void forEachLayerMutable(Consumer<FluidLayer> consumer) {
+        if (isImmutable()) throw new UnsupportedOperationException();
+        for (FluidLayer layer : layers) {
+            consumer.accept(layer);
+        }
+    }
+
+    public void replace(float from, FluidLayer layer) {
+        if (isImmutable()) throw new UnsupportedOperationException();
+        if (from + layer.getVolume() > FULL_VOLUME) {
+            throw new IllegalArgumentException();           // note that this guarantees from < FULL_VOLUME
+        }
+        ListIterator<FluidLayer> it = layers.listIterator();
+        FluidLayer layer1 = it.next();
+        float level = 0.0f;
+        while (level + layer1.getVolume() <= from) {
+            level += layer1.getVolume();
+            layer1 = it.next();                             // note this should never reach the end of the list
+        }
+        if (from == level) {
+            it.remove();
+        } else {
+            it.set(layer1.sliceByVolume(from - level));
+        }
+        it.add(layer.getMutable());                         // note what's stored here may be exactly the object referred to by layer
+        while (level + layer1.getVolume() < from + layer.getVolume()) {
+            level += layer1.getVolume();
+            layer1 = it.next();                             // note this should never reach the end of the list
+            it.remove();
+        }
+        if (from + layer.getVolume() < level + layer1.getVolume()) {
+            it.add(layer1.sliceByVolume(level + layer1.getVolume() - (from + layer.getVolume())));
+        }
+    }
+
+    public void sort() {
+        if (isImmutable()) throw new UnsupportedOperationException();
+        int cycleCount = layers.size();
+        while (cycleCount-- > 0) {
+            int bubblingTimes = cycleCount;
+            ListIterator<FluidLayer> it = layers.listIterator();
+            FluidLayer layer1 = it.next();
+            while (bubblingTimes-- > 0) {
+                FluidLayer layer2 = it.next();
+                if (layer1.getDensity() > layer2.getDensity()) {
+                    it.previous();
+                    it.previous();
+                    it.set(layer2);
+                    if (it.hasPrevious()) {
+                        FluidLayer layer3 = it.previous();
+                        if (layer3.isCompatible(layer2)) {
+                            it.remove();
+                            layer2.absorb(layer3);
+                        }
                     }
-                    layer1 = it1.next();
-                    layer2 = it2.next();
-                } else if (layer1.getVolume() < layer2.getVolume()) {
-                    it2.set(layer2.sliceByVolume(layer1.getVolume()));
-                    it2.add(layer2);
-                    if (!it1.hasNext()) {
-                        break;
-                    } else {
-                        layer1 = it1.next();
+                    it.next();
+                    it.next();
+                    it.set(layer1);
+                    if (it.hasNext()) {
+                        FluidLayer layer4 = it.next();
+                        if (layer4.isCompatible(layer1)) {
+                            it.remove();
+                            layer1.absorb(layer4);
+                        }
                     }
                 }
             }
         }
-        if (it1.hasNext()) {
-            tempIt = it1;
-            it1 = it2;
-            it2 = tempIt;
-        }
-        while (it2.hasNext()) {
-            it1.add(new FluidLayer(new Constituent(Registered.CONSTITUENT_AIR, it2.next().getVolume())));
-            // note here the volume per unit of air is assumed to be 1
-        }
+    }
+
+    public void align(FluidLayerSet layerSet) {
+        if (isImmutable()) throw new UnsupportedOperationException();
+        layerSet.forEachLayer(new Consumer<FluidLayer>() {
+            final ListIterator<FluidLayer> it = layers.listIterator();
+            FluidLayer lastLayer = it.next();
+            float volume1 = 0.0f, volume2 = 0.0f;
+            @Override
+            public void accept(FluidLayer layer) {
+                volume2 += layer.getVolume();
+                while (volume1 + lastLayer.getVolume() < volume2) {
+                    volume1 += lastLayer.getVolume();
+                    lastLayer = it.next();
+                }
+                if (volume1 + lastLayer.getVolume() > volume2) {
+                    it.set(lastLayer.sliceByVolume(volume2 - volume1));
+                    it.add(lastLayer.sliceByVolume(volume1 + lastLayer.getVolume() - volume2));
+                }
+            }
+        });
     }
 
     public static void exchange(FluidLayerSet layerSet1, FluidLayerSet layerSet2, float exchangeRate) {
-        align(layerSet1, layerSet2);
-        ListIterator<FluidLayer> it1 = new ListHelper.ReversedListIterator<>(layerSet1.layers);
-        ListIterator<FluidLayer> it2 = new ListHelper.ReversedListIterator<>(layerSet2.layers);
-        Stack<FluidLayer> stack1 = new Stack<>();
-        Stack<FluidLayer> stack2 = new Stack<>();
+        if (layerSet1.isImmutable() || layerSet2.isImmutable()) throw new UnsupportedOperationException();
+        layerSet1.align(layerSet2);
+        layerSet2.align(layerSet1);
+        ListIterator<FluidLayer> it1 = layerSet1.layers.listIterator();
+        ListIterator<FluidLayer> it2 = layerSet2.layers.listIterator();
         while (it1.hasNext()/* && it2.hasNext()*/) {
             FluidLayer layer1 = it1.next();
             FluidLayer layer2 = it2.next();
-            stack1.push(layer2.sliceByVolume(exchangeRate));
-            stack2.push(layer1.sliceByVolume(exchangeRate));
-            layerSet1.totalVolume -= layer1.getVolume() * exchangeRate;
-            layerSet2.totalVolume -= layer2.getVolume() * exchangeRate;
+            it1.set(layer2.sliceByProportion(exchangeRate));
+            it1.add(layer1.sliceByProportion(1.0f - exchangeRate));
+            it2.set(layer1.sliceByProportion(exchangeRate));
+            it2.add(layer2.sliceByProportion(1.0f - exchangeRate));
         }
-        while (!stack1.empty()) {
-            layerSet1.addFromBottom(stack1.pop());
-            layerSet2.addFromBottom(stack2.pop());
-        }
-        layerSet1.fold();
-        layerSet2.fold();
+        layerSet1.sort();
+        layerSet2.sort();
     }
 
-    public static void exchangeVertical(FluidLayerSet above, FluidLayerSet beneath) {
-        ListIterator<FluidLayer> it1 = new ListHelper.ReversedListIterator<>(above.layers);
-        final float blockVolume = 1000.0f;
-        while (it1.hasNext() && beneath.getVolume() < blockVolume) {
-            FluidLayer layer = it1.next();
-            if (beneath.getVolume() + layer.getVolume() > blockVolume) {
-                beneath.addFromTop(layer.sliceByVolume(blockVolume - beneath.getVolume()));
-                above.totalVolume -= blockVolume - beneath.getVolume();
+    protected void exchangeVertical(FluidLayerSet layerSet) {
+        if (isImmutable() || layerSet.isImmutable()) throw new UnsupportedOperationException();
+        boolean flag;
+        while ((flag = getTopLayer().isCompatible(layerSet.getBottomLayer()))
+            || getTopLayer().getDensity() < layerSet.getBottomLayer().getDensity()) {
+            if (flag) {
+                FluidLayer layer = getTopLayer();
+                float volume = layer.getVolume();
+                layer.absorb(layerSet.getBottomLayer());
+                replace(FULL_VOLUME - volume, layer.sliceByVolume(volume));
+                layerSet.replace(0.0f, layer.sliceByVolume(layerSet.getBottomLayer().getVolume()));
             } else {
-                beneath.addFromTop(layer);
-                above.totalVolume -= layer.getVolume();
-                it1.remove();
+                FluidLayer layer1 = getTopLayer(), layer2 = layerSet.getBottomLayer();
+                float volume = Math.min(layer1.getVolume(), layer2.getVolume());
+                replace(FULL_VOLUME - volume, layer2.sliceByVolume(volume));
+                layerSet.replace(0.0f, layer1.sliceByVolume(volume));
             }
+            this.sort();                    // this might be changed in the future due to high costs
+            layerSet.sort();
         }
     }
+
+    public void exchangeVertical(FluidLayerSet layerSet, boolean isUp) {
+        if (isUp) this.exchangeVertical(layerSet);
+        else layerSet.exchangeVertical(this);
+    }
+
 
     @Override
     public int hashCode() {
@@ -180,23 +196,6 @@ public class FluidLayerSet implements Iterable<Constituent>, NbtConvertible, Lis
     @Override
     public boolean equals(Object o) {
         return this == o || (o instanceof FluidLayerSet && layers.equals(((FluidLayerSet) o).layers));
-    }
-
-    @NotNull @Override
-    public Iterator<Constituent> iterator() {
-        return this.listIterator();
-    }
-
-    public ListIterator<Constituent> listIterator() {
-        return this.listIterator(0);
-    }
-
-    public ListIterator<Constituent> listIterator(int index) {
-        return new FluidLayerSetIterator(this, index);
-    }
-
-    public FluidLayerSet copy() {
-        return new FluidLayerSet(this);
     }
 
     public int getSize() {
@@ -209,21 +208,34 @@ public class FluidLayerSet implements Iterable<Constituent>, NbtConvertible, Lis
 
     @Override
     public void readFromNbt(NbtCompound nbtCompound) {
+        if (isImmutable()) throw new UnsupportedOperationException();
         int[] consId = nbtCompound.getIntArray("constituents_id");
         int[] amount = nbtCompound.getIntArray("amount");
+        layers.clear();
         for (int i = 0; i < consId.length; ++i) {
-            this.addFromTop(new FluidLayer(new Constituent(consId[i], CastHelper.intToFloat(amount[i]))));
+            float floatAmount = CastHelper.intToFloat(amount[i]);
+            if (layers.isEmpty() || !layers.getLast().isCompatible(consId[i])) {
+                layers.add(new FluidLayer(consId[i], floatAmount));
+            } else {
+                layers.getLast().absorb(consId[i], floatAmount);
+            }
         }
     }
 
     @Override
     public void writeToNbt(NbtCompound nbtCompound) {
-        int size = this.getSize(), i = 0;
-        int[] consId = new int[size], amount = new int[size];
-        for (Constituent constituent : this) {
-            consId[i] = constituent.consId();
-            amount[i] = CastHelper.floatToInt(constituent.amount());
-            ++i;
+        final int size = getSize();
+        final int[] consId = new int[size], amount = new int[size];
+        for (FluidLayer layer : this.layers) {
+            layer.forEachConstituent(new BiConsumer<Integer, Float>() {
+                int i = 0;
+                @Override
+                public void accept(Integer integer, Float aFloat) {
+                    consId[i] = integer;
+                    amount[i] = CastHelper.floatToInt(aFloat);
+                    ++i;
+                }
+            });
         }
         nbtCompound.putIntArray("constituents_id", consId);
         nbtCompound.putIntArray("amount", amount);
@@ -241,106 +253,35 @@ public class FluidLayerSet implements Iterable<Constituent>, NbtConvertible, Lis
         }
     }
 
-    public static class FluidLayerSetIterator implements ListIterator<Constituent> {
 
-        private final ListIterator<FluidLayer> it1;
-        private ListIterator<Constituent> it2;
-        private int index;
+    public boolean isImmutable() {
+        return false;
+    }
 
-        public FluidLayerSetIterator(FluidLayerSet layerSet) {
-            this(layerSet, 0);
+    public FluidLayerSet getMutable() {
+        return this;
+    }
+
+    public FluidLayerSet getImmutable() {
+        return new ImmutableFluidLayerSet(this);
+    }
+
+    private static class ImmutableFluidLayerSet extends FluidLayerSet {
+
+        public ImmutableFluidLayerSet(FluidLayerSet layerSet) {
+            super(layerSet.layers);
         }
 
-        public FluidLayerSetIterator(FluidLayerSet layerSet, int index) {
-            it1 = layerSet.layers.listIterator();
-            it2 = it1.hasNext() ? it1.next().listIterator() : null;
-            this.index = index;
-            while (index > 0) {
-                this.next();
-                --index;
-            }
+        public boolean isImmutable() {
+            return true;
         }
 
-        @Override
-        public boolean hasNext() {
-            return it1.hasNext() || (it2 != null && it2.hasNext());
+        public FluidLayerSet getMutable() {
+            return new FluidLayerSet(this);
         }
 
-        @Override
-        public Constituent next() {
-            if (it2 == null) {
-                throw new NoSuchElementException();
-            }
-            while (!it2.hasNext() && it1.hasNext()) {
-                it2 = it1.next().listIterator();
-            }
-            if (it2.hasNext()) {
-                ++index;
-                return it2.next();
-            } else {
-                throw new NoSuchElementException();
-            }
-        }
-
-        @Override
-        public boolean hasPrevious() {
-            return it1.hasPrevious() || (it2 != null && it2.hasPrevious());
-        }
-
-        @Override
-        public Constituent previous() {
-            if (it2 == null) {
-                throw new NoSuchElementException();
-            }
-            while (!it2.hasPrevious() && it1.hasPrevious()) {
-                FluidLayer layer = it1.previous();
-                it2 = layer.listIterator(layer.getSize());
-            }
-            if (it2.hasPrevious()) {
-                --index;
-                return it2.previous();
-            } else {
-                throw new NoSuchElementException();
-            }
-        }
-
-        @Override
-        public int nextIndex() {
-            return index;
-        }
-
-        @Override
-        public int previousIndex() {
-            return index - 1;
-        }
-
-        @Override
-        public void remove() {
-            if (it2 == null) {
-                throw new IllegalStateException();
-            } else {
-                it2.remove();
-            }
-        }
-
-        @Override
-        public void set(Constituent constituent) {
-            if (it2 == null) {
-                throw new IllegalStateException();
-            } else {
-                it2.set(constituent);
-            }
-        }
-
-        @Override
-        public void add(Constituent constituent) {
-            if (it2 == null) {
-                FluidLayer layer = new FluidLayer(constituent);
-                it1.add(layer);
-                it2 = layer.listIterator(1);
-            } else {
-                it2.add(constituent);
-            }
+        public FluidLayerSet getImmutable() {
+            return this;
         }
 
     }

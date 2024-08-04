@@ -5,9 +5,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.chunk.Chunk;
-import org.aki.resolved.layer.LayerSetHelper;
 import org.aki.resolved.layer.FluidLayerSet;
-import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.Component;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 
@@ -30,14 +28,13 @@ public class FluidChunk implements Component, AutoSyncedComponent {
         activeReactions = new IntLinkedOpenHashSet();
         existingConstituents = new Int2IntLinkedOpenHashMap();
         bottomY = chunk.getBottomY();
-        FluidLayerSet nullData = LayerSetHelper.getNull();
         for (int i = 0; i < sectionsData.length; ++i) {
-            sectionsData[i] = new PaletteContainer<>(SECTION_SIZE, nullData, SimpleConverter.INSTANCE);
+            sectionsData[i] = new PaletteContainer<>(SECTION_SIZE, FluidLayerSet.NULL_LAYER_SET, SimpleConverter.INSTANCE);
         }
     }
 
-    public @NotNull FluidLayerSet getFluidData(int i, int j, int k) {
-        return sectionsData[(j - bottomY) >> 4].get(computeIndex(i, (j - bottomY) & 15, k));
+    public FluidLayerSet getFluidData(int i, int j, int k) {
+        return sectionsData[(j - bottomY) >> 4].get(computeIndex(i, (j - bottomY) & 15, k)).getImmutable();
     }
 
     public void setFluidData(int i, int j, int k, FluidLayerSet data) {

@@ -1,8 +1,9 @@
-package org.aki.resolved.layer;
+package org.aki.resolved.reaction;
 
 import net.minecraft.util.math.MathHelper;
+import org.aki.resolved.layer.ConstituentRegistry;
 
-public record Constituent(int consId, float amount) implements ListHelper.Copyable<Constituent> {
+public record Constituent(int consId, float amount) {
 
     public float getVolume() {
         return ConstituentRegistry.REGISTRY.getAttributes(consId).volume() * amount;
@@ -34,8 +35,4 @@ public record Constituent(int consId, float amount) implements ListHelper.Copyab
                 && MathHelper.approximatelyEquals(amount, ((Constituent) o).amount);
     }
 
-    @Override
-    public Constituent copy() {
-        return new Constituent(consId, amount);
-    }
 }

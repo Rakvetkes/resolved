@@ -1,8 +1,6 @@
 package org.aki.resolved.reaction;
 
 import it.unimi.dsi.fastutil.ints.IntIterator;
-import org.aki.resolved.layer.Constituent;
-import org.aki.resolved.layer.ConstituentTypeIterator;
 import org.aki.resolved.layer.FluidLayer;
 import org.apache.logging.log4j.core.util.ObjectArrayIterator;
 

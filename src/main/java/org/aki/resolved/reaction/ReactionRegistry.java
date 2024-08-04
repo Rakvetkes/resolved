@@ -1,7 +1,6 @@
 package org.aki.resolved.reaction;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import org.aki.resolved.layer.ListHelper;
 
 import java.util.Iterator;
 import java.util.LinkedList;

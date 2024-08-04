@@ -1,80 +1,34 @@
 package org.aki.resolved.layer;
 
-import net.minecraft.util.math.MathHelper;
+import it.unimi.dsi.fastutil.ints.Int2FloatRBTreeMap;
 import org.aki.resolved.Registered;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.util.function.BiConsumer;
 
-public class FluidLayer implements Iterable<Constituent>, ListHelper.Copyable<FluidLayer> {
+public class FluidLayer {
 
-    private final LinkedList<Constituent> constituents;
-    private float totalVolume;
-    private float density;
+    protected final Int2FloatRBTreeMap constituents;        // defRetValue is supposed to be 0
+    protected float volume;
+    protected float density;
 
-    private FluidLayer(FluidLayer layer) {
-        constituents = ListHelper.copy(layer.constituents);
-        totalVolume = layer.totalVolume;
+    protected FluidLayer(Int2FloatRBTreeMap constituents, float volume, float density) {
+        this.constituents = constituents;
+        this.volume = volume;
+        this.density = density;
+    }
+
+    public FluidLayer(int consId, float amount) {
+        constituents = new Int2FloatRBTreeMap();
+        constituents.put(consId, amount);
+        var attributes = ConstituentRegistry.REGISTRY.getAttributes(consId);
+        volume = attributes.volume();
+        density = attributes.density();
+    }
+
+    public FluidLayer(FluidLayer layer) {
+        constituents = new Int2FloatRBTreeMap(layer.constituents);
+        volume = layer.volume;
         density = layer.density;
-    }
-
-    private FluidLayer() {
-        constituents = new LinkedList<>();
-        totalVolume = density = 0.0f;
-    }
-
-    public FluidLayer(Constituent base) {
-        constituents = new LinkedList<>();
-        constituents.add(base);
-        totalVolume = base.getVolume();
-        density = base.getDensity();
-    }
-
-    private interface ConstituentComparator {
-        boolean compare(int id1, int id2, float density1, float density2);
-    }
-
-    private void add(Constituent constituent, ListIterator<Constituent> it, ListHelper.FloatComparator comparator) {
-        float volume = constituent.getVolume();
-        float density = constituent.getDensity();
-        ConstituentComparator consComparator = (id1, id2, density1, density2)
-                -> MathHelper.approximatelyEquals(density1, density2) ? comparator.compare(id1, id2)
-                : comparator.compare(density1, density2);
-        boolean flag = false;
-        while (!flag && it.hasNext()) {
-            Constituent j = it.next();
-            if (j.consId() == constituent.consId()) {
-                it.set(j.combine(constituent));
-                flag = true;
-            } else if (consComparator.compare(j.consId(), constituent.consId(), j.getDensity(), density)) {
-                it.previous();
-                it.add(constituent);
-                flag = true;
-            }
-        }
-        if (!flag) {
-            it.add(constituent);
-        }
-        this.density = (this.density * this.totalVolume + density * volume) / (this.totalVolume + volume);
-        this.totalVolume += constituent.getVolume();
-    }
-
-    public void addFromFront(Constituent constituent) {
-        add(constituent, constituents.listIterator(), (a, b) -> a > b);
-    }
-
-    public void addFromBack(Constituent constituent) {
-        add(constituent, new ListHelper.ReversedListIterator<>(constituents), (a, b) -> a <= b);
-    }
-
-    public void add(Constituent constituent) {
-        if (constituent.getDensity() > this.density) {
-            addFromBack(constituent);
-        } else {
-            addFromFront(constituent);
-        }
     }
 
     public int getSize() {
@@ -82,42 +36,65 @@ public class FluidLayer implements Iterable<Constituent>, ListHelper.Copyable<Fl
     }
 
     public float getVolume() {
-        return totalVolume;
+        return volume;
     }
 
     public float getDensity() {
         return density;
     }
 
-    public boolean isCompatible(Constituent constituent) {
-        return CompatibilityRegistry.REGISTRY.checkCompatibility(constituents.getFirst().consId(), constituent.consId());
+    public boolean isCompatible(int consId) {
+        return CompatibilityRegistry.REGISTRY.checkCompatibility(constituents.firstIntKey(), consId);
     }
 
     public boolean isCompatible(FluidLayer layer) {
-        return layer.isCompatible(constituents.getFirst());
+        return layer.isCompatible(constituents.firstIntKey());
     }
 
     public boolean isAir() {
-        return constituents.getFirst().consId() == Registered.CONSTITUENT_AIR;
+        return constituents.firstIntKey() == Registered.CONSTITUENT_AIR;
+    }
+
+    public float amount(int consId) {
+        return constituents.get(consId);
     }
 
     public FluidLayer sliceByVolume(float volume) {
-        ListIterator<Constituent> it = constituents.listIterator();
-        FluidLayer sliced = new FluidLayer();
-        float proportion = volume / totalVolume;
-        while (it.hasNext()) {
-            Constituent j = it.next();
-            sliced.addFromBack(j.sliceByProportion(proportion));
-            it.set(j.sliceByProportion(1.0f - proportion));
+        return sliceByProportion(volume / this.volume);
+    }
+
+    public FluidLayer sliceByProportion(float proportion) {
+        FluidLayer sliced = new FluidLayer(new Int2FloatRBTreeMap(), 0.0f, 0.0f);
+        for (var entry : constituents.int2FloatEntrySet()) {
+            sliced.absorb(entry.getIntKey(), entry.getFloatValue() * proportion);
         }
         return sliced;
     }
 
-    public void combine(FluidLayer layer) {
-        for (Constituent constituent : layer.constituents) {
-            this.add(constituent);
+    public void forEachConstituent(BiConsumer<Integer, Float> consumer) {
+        for (var entry : constituents.int2FloatEntrySet()) {
+            consumer.accept(entry.getIntKey(), entry.getFloatValue());
         }
     }
+
+
+    public void absorb(int consId, float amount) {
+        if (isImmutable()) throw new UnsupportedOperationException();
+        constituents.put(consId, constituents.get(consId) + amount);
+        var attributes = ConstituentRegistry.REGISTRY.getAttributes(consId);
+        density = (density * volume + attributes.density() * attributes.volume() * amount) / (volume + attributes.volume() * amount);
+        volume = volume + attributes.volume() * amount;
+    }
+
+    public void absorb(FluidLayer layer) {
+        if (isImmutable()) throw new UnsupportedOperationException();
+        for (var entry : layer.constituents.int2FloatEntrySet()) {
+            constituents.put(entry.getIntKey(), constituents.get(entry.getIntKey()) + entry.getFloatValue());
+        }
+        density = (density * volume + layer.density * layer.volume) / (volume + layer.volume);
+        volume = volume + layer.volume;
+    }
+
 
     @Override
     public int hashCode() {
@@ -129,21 +106,37 @@ public class FluidLayer implements Iterable<Constituent>, ListHelper.Copyable<Fl
         return this == o || (o instanceof FluidLayer && constituents.equals(((FluidLayer) o).constituents));
     }
 
-    @NotNull @Override
-    public Iterator<Constituent> iterator() {
-        return this.listIterator();
+
+    public boolean isImmutable() {
+        return false;
     }
 
-    public ListIterator<Constituent> listIterator() {
-        return this.listIterator(0);
+    public FluidLayer getMutable() {
+        return this;
     }
 
-    public ListIterator<Constituent> listIterator(int index) {
-        return constituents.listIterator(index);
+    public FluidLayer getImmutable() {
+        return new ImmutableFluidLayer(this);
     }
 
-    public FluidLayer copy() {
-        return new FluidLayer(this);
+    private static class ImmutableFluidLayer extends FluidLayer {
+
+        public ImmutableFluidLayer(FluidLayer layer) {
+            super(layer.constituents, layer.volume, layer.density);
+        }
+
+        public boolean isImmutable() {
+            return true;
+        }
+
+        public FluidLayer getMutable() {
+            return new ImmutableFluidLayer(this);
+        }
+
+        public FluidLayer getImmutable() {
+            return this;
+        }
+
     }
 
 }

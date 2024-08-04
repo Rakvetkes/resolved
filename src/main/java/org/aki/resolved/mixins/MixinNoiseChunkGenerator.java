@@ -10,7 +10,7 @@ import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.*;
 import net.minecraft.world.gen.noise.NoiseConfig;
 import org.aki.resolved.Registered;
-import org.aki.resolved.layer.LayerSetHelper;
+import org.aki.resolved.layer.FluidLayerSet;
 import org.aki.resolved.layer.ConstituentRegistry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,7 +27,7 @@ public abstract class MixinNoiseChunkGenerator {
             locals = LocalCapture.CAPTURE_FAILHARD)
     public void insertedCode1(Blender blender, StructureAccessor structureAccessor, NoiseConfig noiseConfig, Chunk chunk, int minimumCellY, int cellHeight, CallbackInfoReturnable<Chunk> cir, ChunkNoiseSampler chunkNoiseSampler, Heightmap heightmap, Heightmap heightmap2, ChunkPos chunkPos, int i, int j, AquiferSampler aquiferSampler, BlockPos.Mutable mutable, int k, int l, int m, int n, int o, int p, int q, ChunkSection chunkSection, int r, int s, int t, int u, int v, double d, int w, int x, int y, double e, int z, int aa, int ab, double f, BlockState blockState) {
         if (ConstituentRegistry.REGISTRY.get(blockState.getFluidState().getFluid()) > 0) {
-            Registered.FLUID_DATA.get(chunk).setFluidData(y, t, ab, LayerSetHelper.getFromConstituent(blockState.getFluidState().getFluid()));
+            Registered.FLUID_DATA.get(chunk).setFluidData(y, t, ab, new FluidLayerSet(ConstituentRegistry.REGISTRY.get(blockState.getFluidState().getFluid())));
         }
     }
 

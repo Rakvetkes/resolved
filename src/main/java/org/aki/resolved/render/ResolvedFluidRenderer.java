@@ -13,7 +13,6 @@ import net.minecraft.world.BlockRenderView;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import org.aki.resolved.Registered;
-import org.aki.resolved.layer.LayerSetHelper;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
