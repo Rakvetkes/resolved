@@ -1,9 +1,9 @@
 package org.aki.resolved.reaction;
 
-import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntConsumer;
 
 public interface Reaction {
 
-    IntIterator getReagentIterator();
+    void forEachReagent(IntConsumer consumer);
 
 }

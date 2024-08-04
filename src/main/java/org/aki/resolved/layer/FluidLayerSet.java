@@ -1,12 +1,12 @@
 package org.aki.resolved.layer;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import net.minecraft.nbt.NbtCompound;
 import org.aki.resolved.Registered;
 import org.aki.resolved.chunk.NbtConvertible;
 
 import java.util.LinkedList;
 import java.util.ListIterator;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class FluidLayerSet implements NbtConvertible {
@@ -28,7 +28,7 @@ public class FluidLayerSet implements NbtConvertible {
 
     public FluidLayerSet(int consId) {
         this(new LinkedList<>());
-        // todo
+        this.layers.add(new FluidLayer(consId, FULL_VOLUME / ConstituentRegistry.REGISTRY.getAttributes(consId).volume()));
     }
 
     public FluidLayerSet(NbtCompound nbtCompound) {
@@ -224,21 +224,16 @@ public class FluidLayerSet implements NbtConvertible {
 
     @Override
     public void writeToNbt(NbtCompound nbtCompound) {
-        final int size = getSize();
-        final int[] consId = new int[size], amount = new int[size];
+        IntArrayList consId = new IntArrayList();
+        IntArrayList amount = new IntArrayList();
         for (FluidLayer layer : this.layers) {
-            layer.forEachConstituent(new BiConsumer<Integer, Float>() {
-                int i = 0;
-                @Override
-                public void accept(Integer integer, Float aFloat) {
-                    consId[i] = integer;
-                    amount[i] = Float.floatToIntBits(aFloat);
-                    ++i;
-                }
+            layer.forEachConstituent((integer, aFloat) -> {
+                consId.add(integer.intValue());
+                amount.add(Float.floatToIntBits(aFloat));
             });
         }
-        nbtCompound.putIntArray("constituents_id", consId);
-        nbtCompound.putIntArray("amount", amount);
+        nbtCompound.putIntArray("constituents_id", consId.toIntArray());
+        nbtCompound.putIntArray("amount", amount.toIntArray());
     }
 
 

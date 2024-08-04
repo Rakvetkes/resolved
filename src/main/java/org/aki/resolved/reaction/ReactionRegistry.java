@@ -1,15 +1,13 @@
 package org.aki.resolved.reaction;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntConsumer;
 
 public class ReactionRegistry<T extends Reaction> {
 
     private final Int2ObjectOpenHashMap<T> registry;
-    private final Int2ObjectOpenHashMap<LinkedList<T>> searchList;
+    private final Int2ObjectOpenHashMap<IntArrayList> searchList;
     public static final ReactionRegistry<InnerReaction> INNER_REACTION_REGISTRY = new ReactionRegistry<>();
     public static final ReactionRegistry<SurfaceReaction> SURFACE_REACTION_REGISTRY = new ReactionRegistry<>();
 
@@ -21,16 +19,15 @@ public class ReactionRegistry<T extends Reaction> {
     public int register(T reaction) {
         int newKey = registry.size() + 1;
         registry.put(newKey, reaction);
-        for (Iterator<Integer> it = reaction.getReagentIterator(); it.hasNext();) {
-            int consId = it.next();
-            if (searchList.containsKey(consId)) {
-                searchList.get(consId).add(reaction);
+        reaction.forEachReagent(value -> {
+            if (searchList.containsKey(value)) {
+                searchList.get(value).add(newKey);
             } else {
-                LinkedList<T> list = new LinkedList<>();
-                searchList.put(consId, list);
-                list.add(reaction);
+                IntArrayList list = new IntArrayList();
+                searchList.put(value, list);
+                list.add(newKey);
             }
-        }
+        });
         return newKey;
     }
 
@@ -38,9 +35,12 @@ public class ReactionRegistry<T extends Reaction> {
         return registry.get(key);
     }
 
-    public ListIterator<T> getCandidateIterator(int consId) {
-        return searchList.containsKey(consId) ? searchList.get(consId).listIterator()
-                : new ListHelper.NullListIterator<>();
+    public void forEachCandidate(int consId, IntConsumer consumer) {
+        if (searchList.containsKey(consId)) {
+            for (int candidate : searchList.get(consId)) {
+                consumer.accept(candidate);
+            }
+        }
     }
 
 }

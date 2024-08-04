@@ -1,8 +1,7 @@
 package org.aki.resolved.reaction;
 
-import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntConsumer;
 import org.aki.resolved.layer.FluidLayer;
-import org.apache.logging.log4j.core.util.ObjectArrayIterator;
 
 public class BasicReaction implements InnerReaction, SurfaceReaction{
     Constituent[] ingredient, product;
@@ -18,8 +17,10 @@ public class BasicReaction implements InnerReaction, SurfaceReaction{
     }
 
     @Override
-    public IntIterator getReagentIterator() {
-        return new ConstituentTypeIterator(new ObjectArrayIterator<Constituent>(ingredient));
+    public void forEachReagent(IntConsumer consumer) {
+        for (int i = 0; i < ingredient.length; ++i) {
+            consumer.accept(ingredient[i].consId());
+        }
     }
 
     @Override

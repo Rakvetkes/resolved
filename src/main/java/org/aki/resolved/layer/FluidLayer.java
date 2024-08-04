@@ -11,6 +11,11 @@ public class FluidLayer {
     protected float volume;
     protected float density;
 
+    protected FluidLayer() {
+        constituents = new Int2FloatRBTreeMap();
+        volume = density = 0.0f;
+    }
+
     protected FluidLayer(Int2FloatRBTreeMap constituents, float volume, float density) {
         this.constituents = constituents;
         this.volume = volume;
@@ -29,10 +34,6 @@ public class FluidLayer {
         constituents = new Int2FloatRBTreeMap(layer.constituents);
         volume = layer.volume;
         density = layer.density;
-    }
-
-    public static FluidLayer getEmptyLayer() {
-        return new FluidLayer(new Int2FloatRBTreeMap(), 0.0f, 0.0f);
     }
 
     public int getSize() {
@@ -68,7 +69,7 @@ public class FluidLayer {
     }
 
     public FluidLayer sliceByProportion(float proportion) {
-        FluidLayer sliced = getEmptyLayer();
+        FluidLayer sliced = new FluidLayer();
         for (var entry : constituents.int2FloatEntrySet()) {
             sliced.absorb(entry.getIntKey(), entry.getFloatValue() * proportion);
         }
@@ -84,11 +85,12 @@ public class FluidLayer {
 
     public void absorb(int consId, float amount) {
         if (isImmutable()) throw new UnsupportedOperationException();
-        float vol = constituents.get(consId) + amount;
-        if (vol > 0)
-            constituents.put(consId, vol);
+        float amount1 = constituents.get(consId) + amount;
+        if (amount1 == 0.0f) constituents.remove(consId);
+        else constituents.put(consId, amount1);
         var attributes = ConstituentRegistry.REGISTRY.getAttributes(consId);
-        density = (density * volume + attributes.density() * attributes.volume() * amount) / (volume + attributes.volume() * amount);
+        density = (density * volume + attributes.density() * attributes.volume() * amount)
+                / (volume + attributes.volume() * amount);
         volume = volume + attributes.volume() * amount;
     }
 
