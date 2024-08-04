@@ -95,11 +95,12 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
                 vertexConsumer.vertex(x, y + d2, z + d1).color(argb).texture(ur, vr).light(light).normal(0, 1f, 0);
                 vertexConsumer.vertex(x, y, z + d1).color(argb).texture(ul, vr).light(light).normal(0, 1f, 0);
             }
-        };
+        }
     }
     void drawCubeWall(VertexConsumer vertexConsumer, int light, float x, float y, float z, float height, int argb) {
         x += 0.001f;
         y += 0.001f;
+        z += 0.001f;
         drawSquare(vertexConsumer, light, x, y, z, 0.998f, height, argb, Direction.WEST);
         drawSquare(vertexConsumer, light, x, y, z, 0.998f, height, argb, Direction.EAST);
         drawSquare(vertexConsumer, light, x, y, z, 0.998f, height, argb, Direction.NORTH);
