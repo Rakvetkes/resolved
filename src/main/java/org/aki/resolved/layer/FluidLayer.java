@@ -31,6 +31,10 @@ public class FluidLayer {
         density = layer.density;
     }
 
+    public static FluidLayer getEmptyLayer() {
+        return new FluidLayer(new Int2FloatRBTreeMap(), 0.0f, 0.0f);
+    }
+
     public int getSize() {
         return constituents.size();
     }
@@ -64,7 +68,7 @@ public class FluidLayer {
     }
 
     public FluidLayer sliceByProportion(float proportion) {
-        FluidLayer sliced = new FluidLayer(new Int2FloatRBTreeMap(), 0.0f, 0.0f);
+        FluidLayer sliced = getEmptyLayer();
         for (var entry : constituents.int2FloatEntrySet()) {
             sliced.absorb(entry.getIntKey(), entry.getFloatValue() * proportion);
         }
@@ -80,7 +84,9 @@ public class FluidLayer {
 
     public void absorb(int consId, float amount) {
         if (isImmutable()) throw new UnsupportedOperationException();
-        constituents.put(consId, constituents.get(consId) + amount);
+        float vol = constituents.get(consId) + amount;
+        if (vol > 0)
+            constituents.put(consId, vol);
         var attributes = ConstituentRegistry.REGISTRY.getAttributes(consId);
         density = (density * volume + attributes.density() * attributes.volume() * amount) / (volume + attributes.volume() * amount);
         volume = volume + attributes.volume() * amount;

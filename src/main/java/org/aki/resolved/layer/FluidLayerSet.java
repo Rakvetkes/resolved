@@ -4,8 +4,8 @@ import net.minecraft.nbt.NbtCompound;
 import org.aki.resolved.Registered;
 import org.aki.resolved.chunk.NbtConvertible;
 
-import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.ListIterator;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -213,7 +213,7 @@ public class FluidLayerSet implements NbtConvertible {
         int[] amount = nbtCompound.getIntArray("amount");
         layers.clear();
         for (int i = 0; i < consId.length; ++i) {
-            float floatAmount = CastHelper.intToFloat(amount[i]);
+            float floatAmount = Float.intBitsToFloat(amount[i]);
             if (layers.isEmpty() || !layers.getLast().isCompatible(consId[i])) {
                 layers.add(new FluidLayer(consId[i], floatAmount));
             } else {
@@ -232,25 +232,13 @@ public class FluidLayerSet implements NbtConvertible {
                 @Override
                 public void accept(Integer integer, Float aFloat) {
                     consId[i] = integer;
-                    amount[i] = CastHelper.floatToInt(aFloat);
+                    amount[i] = Float.floatToIntBits(aFloat);
                     ++i;
                 }
             });
         }
         nbtCompound.putIntArray("constituents_id", consId);
         nbtCompound.putIntArray("amount", amount);
-    }
-
-    public static class CastHelper {
-        static final ByteBuffer byte4 = ByteBuffer.allocate(4);
-        public static int floatToInt(float f) {
-            byte4.putFloat(0, f);
-            return byte4.getInt(0);
-        }
-        public static float intToFloat(int f) {
-            byte4.putInt(0, f);
-            return byte4.getFloat(0);
-        }
     }
 
 
