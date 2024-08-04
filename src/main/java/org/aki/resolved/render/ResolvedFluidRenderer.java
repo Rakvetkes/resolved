@@ -11,12 +11,9 @@ import net.minecraft.client.render.chunk.ChunkRendererRegion;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.Colors;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockRenderView;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import org.aki.resolved.Registered;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
