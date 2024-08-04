@@ -38,10 +38,10 @@ public class Registered {
         RESOLVED_FLUID_BLOCK = Registry.register(Registries.BLOCK, Identifiers.RESOLVED_FLUID_BLOCK,
                 new ResolvedFluidBlock(Blocks.WATER.getSettings()));
 
-        NULL_ATTRIBUTE = new ConstituentRegistry.ConstituentAttributes(0, 0);
-        CONSTITUENT_AIR = ConstituentRegistry.REGISTRY.register(Fluids.EMPTY, NULL_ATTRIBUTE.volume(1).density(0));
-        CONSTITUENT_WATER = ConstituentRegistry.REGISTRY.register(Fluids.WATER, NULL_ATTRIBUTE.volume(1).density(1));
-        CONSTITUENT_LAVA = ConstituentRegistry.REGISTRY.register(Fluids.LAVA, NULL_ATTRIBUTE.volume(1).density(5));
+        NULL_ATTRIBUTE = new ConstituentRegistry.ConstituentAttributes(0, 0, 0);
+        CONSTITUENT_AIR = ConstituentRegistry.REGISTRY.register(Fluids.EMPTY, NULL_ATTRIBUTE.volume(1).density(0).energy(114));
+        CONSTITUENT_WATER = ConstituentRegistry.REGISTRY.register(Fluids.WATER, NULL_ATTRIBUTE.volume(1).density(1).energy(514));
+        CONSTITUENT_LAVA = ConstituentRegistry.REGISTRY.register(Fluids.LAVA, NULL_ATTRIBUTE.volume(1).density(5).energy(1919));
 
         CompatibilityRegistry.REGISTRY.createClass(CONSTITUENT_AIR);
         CompatibilityRegistry.REGISTRY.createClass(CONSTITUENT_WATER);

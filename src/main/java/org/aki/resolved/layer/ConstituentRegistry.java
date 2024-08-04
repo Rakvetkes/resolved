@@ -41,14 +41,18 @@ public class ConstituentRegistry {
         return registry.getRawId(constituent);
     }
 
-    public record ConstituentAttributes(float volume, float density) {
+    public record ConstituentAttributes(float volume, float density, float energy) {
 
         public ConstituentAttributes volume(float volume) {
-            return new ConstituentAttributes(volume, this.density);
+            return new ConstituentAttributes(volume, density, energy);
         }
 
         public ConstituentAttributes density(float density) {
-            return new ConstituentAttributes(this.volume, density);
+            return new ConstituentAttributes(volume, density, energy);
+        }
+
+        public ConstituentAttributes energy(float energy) {
+            return new ConstituentAttributes(volume, density, energy);
         }
 
     }
