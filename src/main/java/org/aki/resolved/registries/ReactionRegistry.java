@@ -4,13 +4,13 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.aki.resolved.datarelated.blockdata.ListHelper;
 import org.aki.resolved.datarelated.reaction.InnerReaction;
 import org.aki.resolved.datarelated.reaction.SurfaceReaction;
-import org.aki.resolved.datarelated.reaction.ReagentCollection;
+import org.aki.resolved.datarelated.reaction.Reaction;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-public class ReactionRegistry<T extends ReagentCollection> {
+public class ReactionRegistry<T extends Reaction> {
 
     private final Int2ObjectOpenHashMap<T> registry;
     private final Int2ObjectOpenHashMap<LinkedList<T>> searchList;

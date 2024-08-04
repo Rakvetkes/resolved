@@ -25,6 +25,10 @@ public class ConstituentRegistry {
         }
     }
 
+    public int count() {
+        return registry.size();
+    }
+
     public Object get(int index) {
         return registry.get(index);
     }
