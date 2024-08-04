@@ -7,17 +7,17 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-import org.aki.resolved.blockrelated.ResolvedFluid;
-import org.aki.resolved.blockrelated.ResolvedFluidBlock;
-import org.aki.resolved.datarelated.FluidChunkData;
-import org.aki.resolved.registries.CompatibilityRegistry;
-import org.aki.resolved.registries.ConstituentRegistry;
+import org.aki.resolved.misc.ResolvedFluid;
+import org.aki.resolved.misc.ResolvedFluidBlock;
+import org.aki.resolved.chunk.FluidChunk;
+import org.aki.resolved.layer.CompatibilityRegistry;
+import org.aki.resolved.layer.ConstituentRegistry;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 
 public class Registered {
 
-    public static final ComponentKey<FluidChunkData> FLUID_DATA;
+    public static final ComponentKey<FluidChunk> FLUID_DATA;
     public static final Fluid RESOLVED_FLUID;
     public static final Block RESOLVED_FLUID_BLOCK;
 
@@ -33,7 +33,7 @@ public class Registered {
     }
 
     static {
-        FLUID_DATA = ComponentRegistry.getOrCreate(Registered.Identifiers.FLUID_CHUNK_DATA, FluidChunkData.class);
+        FLUID_DATA = ComponentRegistry.getOrCreate(Registered.Identifiers.FLUID_CHUNK_DATA, FluidChunk.class);
         RESOLVED_FLUID = Registry.register(Registries.FLUID, Identifiers.RESOLVED_FLUID, new ResolvedFluid());
         RESOLVED_FLUID_BLOCK = Registry.register(Registries.BLOCK, Identifiers.RESOLVED_FLUID_BLOCK,
                 new ResolvedFluidBlock(Blocks.WATER.getSettings()));
