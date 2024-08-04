@@ -3,10 +3,23 @@ package org.aki.resolved.blockrelated;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
+import net.fabricmc.fabric.api.renderer.v1.Renderer;
+import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
+import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
+import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
+import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.chunk.ChunkRendererRegion;
+import net.minecraft.client.util.BufferAllocator;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockRenderView;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -37,6 +50,25 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
             }
         }
         throw new IllegalArgumentException();
+    }
+
+    private void vertex(VertexConsumer vertexConsumer, float f, float g, float h, float l, float m) {
+        vertexConsumer.vertex(f, g, h).color(0.0f, 0.8f, 0f, 1f).texture(l, m).light(15728640).normal(0, 1.0f, 0);
+    }
+    @Override
+    public void renderFluid(BlockPos pos, BlockRenderView world, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState) {
+
+//        super.renderFluid(pos, world, vertexConsumer, blockState, fluidState);
+
+
+        int x = pos.getX() & 0xF, y = pos.getY() &0xF, z =pos.getZ() & 0xF;
+        float ul = sprites[0].getFrameU(0), ur = sprites[0].getFrameU(1f);
+        float vl = sprites[0].getFrameV(0), vr = sprites[0].getFrameV(1f);
+        vertex(vertexConsumer, x, y, z, ul, vl);
+        vertex(vertexConsumer, x + 0.999f, y, z, ur, vl);
+        vertex(vertexConsumer, x + 0.999f, y, z + 0.999f, ur, vr);
+        vertex(vertexConsumer, x, y, z + 0.999f, ul, vr);
+        // todo
     }
 
 }
