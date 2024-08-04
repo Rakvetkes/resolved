@@ -5,6 +5,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.chunk.Chunk;
+import org.aki.resolved.Registered;
 import org.aki.resolved.layer.FluidLayerSet;
 import org.aki.resolved.reaction.InnerReaction;
 import org.aki.resolved.reaction.Reaction;
@@ -33,6 +34,7 @@ public class FluidChunk implements Component, AutoSyncedComponent {
         activeInnerReactions = new ActiveReactionRegistry<>(ReactionRegistry.INNER_REACTION_REGISTRY);
         activeSurfaceReactions = new ActiveReactionRegistry<>(ReactionRegistry.SURFACE_REACTION_REGISTRY);
         existingConstituents = new Int2IntLinkedOpenHashMap();
+        existingConstituents.put(Registered.CONSTITUENT_AIR, SECTION_SIZE);     // fill the counter with air
         bottomY = chunk.getBottomY();
         for (int i = 0; i < sectionsData.length; ++i) {
             sectionsData[i] = new PaletteContainer<>(SECTION_SIZE, FluidLayerSet.NULL_LAYER_SET, SimpleConverter.INSTANCE);
