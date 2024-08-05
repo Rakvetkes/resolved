@@ -91,7 +91,7 @@ public class FluidLayer {
     public void absorb(int consId, float amount) {
         if (isImmutable()) throw new UnsupportedOperationException();
         constituents.addTo(consId, amount);
-        if (constituents.get(consId) == 0.0f) constituents.remove(consId);
+        if (constituents.size() > 1 && constituents.get(consId) == 0.0f) constituents.remove(consId);
         var attributes = ConstituentRegistry.REGISTRY.getAttributes(consId);
         density = (density * volume + attributes.density() * attributes.volume() * amount)
                 / (volume + attributes.volume() * amount);

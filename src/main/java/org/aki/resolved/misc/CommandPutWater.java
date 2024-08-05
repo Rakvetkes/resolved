@@ -36,8 +36,8 @@ public class CommandPutWater {
         FluidLayerSet data = new FluidLayerSet(Registered.CONSTITUENT_WATER);
         data.replace(0.0f, new FluidLayer(Registered.CONSTITUENT_AIR, FluidLayerSet.FULL_VOLUME - amount
                 * ConstituentRegistry.REGISTRY.getAttributes(Registered.CONSTITUENT_WATER).volume()));
-        chunk.setFluidData(blockPos.getX() & 15, blockPos.getY(), blockPos.getZ() & 15, data);
         context.getSource().getWorld().setBlockState(blockPos, Registered.RESOLVED_FLUID_BLOCK.getDefaultState());
+        chunk.setFluidData(blockPos.getX() & 15, blockPos.getY(), blockPos.getZ() & 15, data);
         return 1;
     }
 

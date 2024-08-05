@@ -26,7 +26,7 @@ public abstract class MixinProtoChunk extends Chunk {
 
     @Inject(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ChunkSection;setBlockState(IIILnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"), locals = LocalCapture.CAPTURE_FAILHARD)
     public void onBlockStateGenerated(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir, int i, int j, int k, int l, ChunkSection chunkSection, boolean bl, int m, int n, int o) {
-        DataSyncHelper.onBlockStateGenerated(this, state, m, j, o);
+        DataSyncHelper.onBlockStateGenerated(this, state, m, j, o, true);
     }
 
     @Redirect(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ChunkSection;setBlockState(IIILnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"))

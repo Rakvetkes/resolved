@@ -11,15 +11,14 @@ import org.aki.resolved.layer.StateModelRegistry;
 
 public final class DataSyncHelper {
 
-    public static void onBlockStateGenerated(Chunk chunk, BlockState state, int i, int j, int k) {
+    public static void onBlockStateGenerated(Chunk chunk, BlockState state, int i, int j, int k, boolean placeFluid) {
         FluidChunk fluidChunk = Registered.FLUID_DATA.get(chunk);
-        if (!state.isAir() && !(state.getBlock() instanceof FluidBlock)) {
+        if (!state.isAir() && !(state.getBlock() instanceof FluidBlock) && !(state.getBlock() instanceof ResolvedFluidBlock)) {
             fluidChunk.setFluidData(i, j, k, StateModelRegistry.REGISTRY.containsKey(state.getBlock()) ?
-                    StateModelRegistry.REGISTRY.get(state.getBlock()).getModel(state)
-                    : new FluidLayerSet(Registered.CONSTITUENT_SOLID));
+                    StateModelRegistry.REGISTRY.get(state.getBlock()).getModel(state) : FluidLayerSet.SOLID_LAYER_SET);
         }
         int fluidConsId = ConstituentRegistry.REGISTRY.get(state.getFluidState().getFluid());
-        if (fluidConsId > 0) {
+        if (placeFluid && fluidConsId > 0) {
             FluidLayerSet data = fluidChunk.getFluidData(i, j, k).getMutable();
             data.fill(fluidConsId);
             fluidChunk.setFluidData(i, j, k, data);

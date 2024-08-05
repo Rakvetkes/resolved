@@ -57,6 +57,7 @@ public class FluidLayerSet implements NbtConvertible {
     }
 
 
+
     public FluidLayer getTopLayerMutable() {
         if (isImmutable()) throw new UnsupportedOperationException();
         return layers.getFirst();
@@ -115,17 +116,7 @@ public class FluidLayerSet implements NbtConvertible {
 
     public void sort() {
         if (isImmutable()) throw new UnsupportedOperationException();
-        ListIterator<FluidLayer> it = layers.listIterator();
-        FluidLayer layer = it.next();
-        while (it.hasNext()) {
-            FluidLayer layer1 = it.next();
-            if (layer.isCompatible(layer1)) {
-                it.remove();
-                layer.absorb(layer1);
-            } else {
-                layer = layer1;
-            }
-        }
+        fold();
         int cycleCount = layers.size();
         while (cycleCount-- > 0) {
             int bubblingTimes = layers.size() - 1;
@@ -229,13 +220,33 @@ public class FluidLayerSet implements NbtConvertible {
             layerSet1.sort();
             layerSet2.sort();
         }
-
     }
 
     public void exchangeVertical(FluidLayerSet layerSet, boolean isUp) {
         if (isUp) exchangeVertical(this, layerSet);
         else exchangeVertical(layerSet, this);
     }
+
+    protected void fold() {
+        ListIterator<FluidLayer> it = layers.listIterator();
+        while (it.hasNext()) {
+            if (it.next().getVolume() == 0.0f) {
+                it.remove();
+            }
+        }
+        it = layers.listIterator();
+        FluidLayer layer = it.next();
+        while (it.hasNext()) {
+            FluidLayer layer1 = it.next();
+            if (layer.isCompatible(layer1)) {
+                it.remove();
+                layer.absorb(layer1);
+            } else {
+                layer = layer1;
+            }
+        }
+    }
+
 
 
     @Override
