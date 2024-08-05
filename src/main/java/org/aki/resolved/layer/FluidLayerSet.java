@@ -164,14 +164,15 @@ public class FluidLayerSet implements NbtConvertible {
             @Override
             public void accept(FluidLayer layer) {
                 volume2 += layer.getVolume();
-                while (FloatComparator.compare(volume1 + lastLayer.getVolume(), volume2) == -1) {
+                while (it.hasNext() && volume1 + lastLayer.getVolume() < volume2) {
                     volume1 += lastLayer.getVolume();
                     lastLayer = it.next();
                 }
-                if (FloatComparator.compare(volume1 + lastLayer.getVolume(), volume2) == 1) {
+                if (volume1 + lastLayer.getVolume() > volume2) {
                     it.set(lastLayer.sliceByVolume(volume2 - volume1));
-                    it.add(lastLayer.sliceByVolume(volume1 + lastLayer.getVolume() - volume2));
+                    it.add(lastLayer = lastLayer.sliceByVolume(volume1 + lastLayer.getVolume() - volume2));
                     it.previous(); it.next();
+                    volume1 = volume2;
                 }
             }
         });
@@ -183,7 +184,7 @@ public class FluidLayerSet implements NbtConvertible {
         layerSet2.align(layerSet1);
         ListIterator<FluidLayer> it1 = layerSet1.layers.listIterator();
         ListIterator<FluidLayer> it2 = layerSet2.layers.listIterator();
-        while (it1.hasNext()/* && it2.hasNext()*/) {
+        while (it1.hasNext() && it2.hasNext()) {
             FluidLayer layer1 = it1.next();
             FluidLayer layer2 = it2.next();
             if (!layer1.isSolid() && !layer2.isSolid() && layer1.getVolume()
