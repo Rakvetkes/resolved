@@ -14,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockRenderView;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
@@ -52,20 +53,23 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
         return (Math.max(k, l)) | (Math.max(m, n)) << 16;
     }
 
-//    private void vertex(VertexConsumer vertexConsumer, float f, float g, float h, float l, float m) {
-//        vertexConsumer.vertex(f, g, h).color(0.0f, 0.8f, 0f, 1f).texture(l, m).light(15728640).normal(0, 1.0f, 0);
-//    }
-    void drawSquare(VertexConsumer vertexConsumer, int light, float x, float y, float z, float d1, float d2, int argb, Direction direction) {
+    /**
+     * @param light Light for OpenGL
+     * @param d2 size of square, which usually be vertical.
+     * @param argb color
+     * @param direction From where you can see
+     */
+    void drawSquare(VertexConsumer vertexConsumer, int light, float x, float y, float z, float d1, float d2, int argb, @NotNull Direction direction) {
         float ul = sprites[0].getFrameU(0), ur = sprites[0].getFrameU(d1);
         float vl = sprites[0].getFrameV(0), vr = sprites[0].getFrameV(d2);
         switch (direction) {
-            case DOWN -> {
+            case UP -> {
                 vertexConsumer.vertex(x, y, z).color(argb).texture(ul, vl).light(light).normal(0, 1f, 0);
                 vertexConsumer.vertex(x, y, z + d2).color(argb).texture(ul, vr).light(light).normal(0, 1f, 0);
                 vertexConsumer.vertex(x + d1, y, z + d2).color(argb).texture(ur, vr).light(light).normal(0, 1f, 0);
                 vertexConsumer.vertex(x + d1, y, z).color(argb).texture(ur, vl).light(light).normal(0, 1f, 0);
             }
-            case UP -> {
+            case DOWN -> {
                 vertexConsumer.vertex(x, y, z).color(argb).texture(ul, vl).light(light).normal(0, 1f, 0);
                 vertexConsumer.vertex(x + d1, y, z).color(argb).texture(ur, vl).light(light).normal(0, 1f, 0);
                 vertexConsumer.vertex(x + d1, y, z + d2).color(argb).texture(ur, vr).light(light).normal(0, 1f, 0);
@@ -113,8 +117,7 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
 
 
         int x = pos.getX() & 0xF, y = pos.getY() &0xF, z = pos.getZ() & 0xF;
-        drawCubeWall(vertexConsumer, getLight(world, pos), x, y, z, 0.999f, Colors.GREEN);
-//        drawSquare(vertexConsumer, 15728640, x, y, z, 1f, 1f, Colors.GREEN, Direction.DOWN);
+        drawSquare(vertexConsumer, 15728640, x, y, z, 1f, 1f, Colors.GREEN, Direction.WEST);
 //        vertex(vertexConsumer, x, y, z, ul, vl);
 //        vertex(vertexConsumer, x + 1f, y, z, ur, vl);
 //        vertex(vertexConsumer, x + 1f, y, z + 1f, ur, vr);
