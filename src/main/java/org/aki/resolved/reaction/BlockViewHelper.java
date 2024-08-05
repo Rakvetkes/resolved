@@ -5,13 +5,14 @@ import net.minecraft.world.BlockRenderView;
 import net.minecraft.world.World;
 
 public final class BlockViewHelper {
-    private static World tempWorld;
+    private static BlockRenderView tempChunk;
+    private static World tempChunkWorld;
     public static World getWorld(BlockRenderView view) {
-        if (tempWorld == view)
-            return tempWorld;
+        if (tempChunk == view)
+            return tempChunkWorld;
         if (view.getClass().equals(ChunkRendererRegion.class)) {
             try {
-                return tempWorld = (World) view.getClass().getDeclaredField("world").get(view);
+                return tempChunkWorld = (World) view.getClass().getDeclaredField("world").get(view);
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
