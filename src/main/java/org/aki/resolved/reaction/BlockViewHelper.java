@@ -12,7 +12,9 @@ public final class BlockViewHelper {
             return tempChunkWorld;
         if (view.getClass().equals(ChunkRendererRegion.class)) {
             try {
-                return tempChunkWorld = (World) view.getClass().getDeclaredField("world").get(view);
+                tempChunkWorld = (World) view.getClass().getDeclaredField("world").get(view);
+                tempChunk = view;
+                return tempChunkWorld;
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
