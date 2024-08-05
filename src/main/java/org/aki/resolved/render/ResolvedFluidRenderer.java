@@ -45,7 +45,7 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
     protected static float getHeight(BlockRenderView world, BlockPos pos) {
         FluidLayerSet data = Registered.FLUID_DATA.get(BlockViewHelper.getWorld(world).getChunk(pos.getX() >> 4, pos.getZ() >> 4))
                 .getFluidData(pos.getX() & 15, pos.getY(), pos.getZ() & 15);
-        return 1.0f - (data.getTopLayer().isAir() ? data.getTopLayer().getVolume() / FluidLayerSet.FULL_VOLUME : 0.0f);
+        return 1.0f - (data.getTopLayer().isAir() || data.getTopLayer().isSolid() ? data.getTopLayer().getVolume() / FluidLayerSet.FULL_VOLUME : 0.0f);
     }
 
     protected static FloatFloatImmutablePair shouldRenderHeight(BlockRenderView world, BlockPos pos, Direction direction) {
