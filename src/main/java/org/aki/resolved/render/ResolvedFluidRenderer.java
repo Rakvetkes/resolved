@@ -65,9 +65,9 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
      * @param argb color
      * @param direction From where you can see
      */
-    void drawSquare(VertexConsumer vertexConsumer, int light, float x, float y, float z, float d1, float d2, int argb, @NotNull Direction direction) {
-        float ul = sprites[0].getFrameU(0), ur = sprites[0].getFrameU(d1);
-        float vl = sprites[0].getFrameV(0), vr = sprites[0].getFrameV(d2);
+    void drawSquare(VertexConsumer vertexConsumer, int light, float x, float y, float z, float d1, float d2, int argb, @NotNull Direction direction, int textureId) {
+        float ul = sprites[textureId].getFrameU(0), ur = sprites[textureId].getFrameU(d1);
+        float vl = sprites[textureId].getFrameV(0), vr = sprites[textureId].getFrameV(d2);
         switch (direction) {
             case UP -> {
                 vertexConsumer.vertex(x, y, z).color(argb).texture(ul, vl).light(light).normal(0, 1f, 0);
@@ -82,46 +82,40 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
                 vertexConsumer.vertex(x, y, z + d2).color(argb).texture(ul, vr).light(light).normal(0, 1f, 0);
             }
             case NORTH -> {
-                vertexConsumer.vertex(x, y, z).color(argb).texture(ul, vl).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x, y + d2, z).color(argb).texture(ul, vr).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x + d1, y + d2, z).color(argb).texture(ur, vr).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x + d1, y, z).color(argb).texture(ur, vl).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y, z).color(argb).texture(ur, vr).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y + d2, z).color(argb).texture(ur, vl).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x + d1, y + d2, z).color(argb).texture(ul, vl).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x + d1, y, z).color(argb).texture(ul, vr).light(light).normal(0, 1f, 0);
             }
             case SOUTH -> {
-                vertexConsumer.vertex(x, y, z).color(argb).texture(ul, vl).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x + d1, y, z).color(argb).texture(ur, vl).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x + d1, y + d2, z).color(argb).texture(ur, vr).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x, y + d2, z).color(argb).texture(ul, vr).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y, z).color(argb).texture(ur, vr).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x + d1, y, z).color(argb).texture(ul, vr).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x + d1, y + d2, z).color(argb).texture(ul, vl).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y + d2, z).color(argb).texture(ur, vl).light(light).normal(0, 1f, 0);
             }
             case WEST -> {
-                vertexConsumer.vertex(x, y, z).color(argb).texture(ul, vl).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x, y, z + d1).color(argb).texture(ul, vr).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x, y + d2, z + d1).color(argb).texture(ur, vr).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x, y + d2, z).color(argb).texture(ur, vl).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y, z).color(argb).light(light).texture(ul, vr).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y, z + d1).color(argb).texture(ur, vr).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y + d2, z + d1).color(argb).texture(ur, vl).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y + d2, z).color(argb).texture(ul, vl).light(light).normal(0, 1f, 0);
             }
             case EAST -> {
-                vertexConsumer.vertex(x, y, z).color(argb).texture(ul, vl).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x, y + d2, z).color(argb).texture(ur, vl).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x, y + d2, z + d1).color(argb).texture(ur, vr).light(light).normal(0, 1f, 0);
-                vertexConsumer.vertex(x, y, z + d1).color(argb).texture(ul, vr).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y, z).color(argb).light(light).texture(ul, vr).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y + d2, z).color(argb).texture(ul, vl).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y + d2, z + d1).color(argb).texture(ur, vl).light(light).normal(0, 1f, 0);
+                vertexConsumer.vertex(x, y, z + d1).color(argb).texture(ur, vr).light(light).normal(0, 1f, 0);
             }
         }
     }
-    void drawCubeWall(VertexConsumer vertexConsumer, int light, float x, float y, float z, float height, int argb) {
-        x += 0.001f;
-        y += 0.001f;
-        z += 0.001f;
-        drawSquare(vertexConsumer, light, x, y, z, 0.998f, height, argb, Direction.WEST);
-        drawSquare(vertexConsumer, light, x, y, z, 0.998f, height, argb, Direction.EAST);
-        drawSquare(vertexConsumer, light, x, y, z, 0.998f, height, argb, Direction.NORTH);
-        drawSquare(vertexConsumer, light, x, y, z, 0.998f, height, argb, Direction.SOUTH);
+
+    void drawSquare(VertexConsumer vertexConsumer, int light, float x, float y, float z, float d1, float d2, int argb, @NotNull Direction direction) {
+        drawSquare(vertexConsumer, light, x, y, z, d1, d2, argb, direction, 0);
     }
+
     IntFloatImmutablePair[] getLayerColors(BlockRenderView world, BlockPos pos) {
         // todo
         var t = new IntFloatImmutablePair[1];
         t[0] = IntFloatImmutablePair.of(Colors.LIGHT_YELLOW, getHeight(world, pos));
-//        t[0] = IntFloatImmutablePair.of(Colors.GREEN, 0.5f);
-//        t[1] = IntFloatImmutablePair.of(Colors.RED, 0.5f);
         return  t;
     }
     boolean shouldRenderBottom(BlockRenderView world, BlockPos pos) {
@@ -134,10 +128,6 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
     }
     @Override
     public void renderFluid(BlockPos pos, BlockRenderView world, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState) {
-
-//        super.renderFluid(pos, world, vertexConsumer, blockState, fluidState);
-
-
         int x = pos.getX() & 0xF, y = pos.getY() &0xF, z = pos.getZ() & 0xF;
         final IntFloatImmutablePair[] layers = getLayerColors(world, pos);
         if (layers.length == 0) {
@@ -157,7 +147,7 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
                 } else if (direction == Direction.EAST) {
                     xd += 0.998f;
                 }
-                drawSquare(vertexConsumer, getLight(world, pos), xd, fy + commonRange.leftFloat(), zd, 0.998f, RangeHelper.getLength(commonRange), i.leftInt(), direction);
+                drawSquare(vertexConsumer, getLight(world, pos), xd, fy + commonRange.leftFloat(), zd, 0.998f, RangeHelper.getLength(commonRange), i.leftInt(), direction, 1);
                 last += i.rightFloat();
             }
         }
