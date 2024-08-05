@@ -16,11 +16,11 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class CommandGetBlock {
 
-    public static void onInitialize() {
-        CommandRegistrationCallback.EVENT.register(CommandGetBlock::registerCommands);
+    public static void initialize() {
+        CommandRegistrationCallback.EVENT.register(CommandGetBlock::registerCommand);
     }
 
-    private static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
+    private static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
         dispatcher.register(literal("getblock")
                 .then(argument("blockPos", BlockPosArgumentType.blockPos())
                         .executes(context -> execute(context, BlockPosArgumentType.getBlockPos(context, "blockPos")))));

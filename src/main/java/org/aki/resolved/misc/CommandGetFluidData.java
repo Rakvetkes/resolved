@@ -17,11 +17,11 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class CommandGetFluidData {
 
-    public static void onInitialize() {
-        CommandRegistrationCallback.EVENT.register(CommandGetFluidData::registerCommands);
+    public static void initialize() {
+        CommandRegistrationCallback.EVENT.register(CommandGetFluidData::registerCommand);
     }
 
-    private static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
+    private static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess, CommandManager.RegistrationEnvironment registrationEnvironment) {
         dispatcher.register(literal("getfluiddata")
                 .then(argument("blockPos", BlockPosArgumentType.blockPos())
                         .executes(context -> execute(context, BlockPosArgumentType.getBlockPos(context, "blockPos")))));
