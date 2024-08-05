@@ -1,4 +1,4 @@
-package org.aki.resolved.mixins;
+package org.aki.resolved.misc;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;

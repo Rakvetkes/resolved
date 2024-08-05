@@ -116,16 +116,16 @@ public class ResolvedFluid extends Fluid {
                     FluidLayerSet.exchange(b, d, 0.2f);
                 }
                 if (!c.equals(d)) {
-                    setFluidData(world, pos.offset(r), d);
                     updateBlockState(world, pos.offset(r), d);
+                    setFluidData(world, pos.offset(r), d);
                     world.scheduleFluidTick(pos.offset(r), this, getTickRate(world));
                 }
             }
         }
         b.forEachLayer(l -> chunk.forEachInnerReaction(v -> ReactionRegistry.INNER_REACTION_REGISTRY.get(v).react(l, temp)));
         if (!a.equals(b)) {
-            setFluidData(world, pos, b);
             updateBlockState(world, pos, b);
+            setFluidData(world, pos, b);
             world.scheduleFluidTick(pos, this, getTickRate(world));
         }
     }

@@ -8,6 +8,7 @@ import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.*;
 import net.minecraft.world.gen.chunk.BlendingData;
+import org.aki.resolved.misc.DataSyncHelper;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
