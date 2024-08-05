@@ -1,5 +1,7 @@
 package org.aki.resolved.render;
 
+import it.unimi.dsi.fastutil.floats.FloatFloatImmutablePair;
+import it.unimi.dsi.fastutil.ints.IntFloatImmutablePair;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
@@ -7,13 +9,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.chunk.ChunkRendererRegion;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.Colors;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockRenderView;
-import net.minecraft.world.World;
+import org.aki.resolved.reaction.RangeHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,23 +28,9 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
     @Override
     public int getFluidColor(@Nullable BlockRenderView view, @Nullable BlockPos pos, FluidState state) {
         throw new UnsupportedOperationException();
-//        if (view == null) return 0x0;
-//        Chunk chunk = getWorld(view).getChunk(ChunkSectionPos.getSectionCoord(pos.getX()), ChunkSectionPos.getSectionCoord(pos.getZ()));
-//        return LayerSetHelper.getColor(Registered.FLUID_DATA.get(chunk).getFluidData(pos.getX() & 15, pos.getY(), pos.getZ() & 15));
     }
 
-    public static World getWorld(BlockRenderView view) {
-        if (view.getClass().equals(ChunkRendererRegion.class)) {
-            try {
-                return (World) view.getClass().getDeclaredField("world").get(view);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        throw new IllegalArgumentException();
-    }
-
-    private int getLight(BlockRenderView world, BlockPos pos) {
+    protected int getLight(BlockRenderView world, BlockPos pos) {
         int i = WorldRenderer.getLightmapCoordinates(world, pos);
         int j = WorldRenderer.getLightmapCoordinates(world, pos.up());
         int k = i & (LightmapTextureManager.MAX_BLOCK_LIGHT_COORDINATE | 0xF);
@@ -51,6 +38,22 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
         int m = i >> 16 & (LightmapTextureManager.MAX_BLOCK_LIGHT_COORDINATE | 0xF);
         int n = j >> 16 & (LightmapTextureManager.MAX_BLOCK_LIGHT_COORDINATE | 0xF);
         return (Math.max(k, l)) | (Math.max(m, n)) << 16;
+    }
+
+    protected static float getHeight(BlockRenderView world, BlockPos pos) {
+        // todo
+        return 1f;
+    }
+
+    protected static FloatFloatImmutablePair shouldRenderHeight(BlockRenderView world, BlockPos pos, Direction direction) {
+        // todo this is only for test
+        return FloatFloatImmutablePair.of(0, 1);
+        // todo this is what should they do
+//        if (direction.equals(Direction.UP) || direction.equals(Direction.DOWN)) {
+//            throw new UnsupportedOperationException("Direction should be vertical.");
+//        }
+//        float a = getHeight(world, pos), b = getHeight(world, pos.add(direction.getVector()));
+//        return a > b ? FloatFloatImmutablePair.of(b, a) : FloatFloatImmutablePair.of(0, 0);
     }
 
     /**
@@ -110,6 +113,21 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
         drawSquare(vertexConsumer, light, x, y, z, 0.998f, height, argb, Direction.NORTH);
         drawSquare(vertexConsumer, light, x, y, z, 0.998f, height, argb, Direction.SOUTH);
     }
+    IntFloatImmutablePair[] getLayerColors(BlockRenderView world, BlockPos pos) {
+        // todo
+        var t = new IntFloatImmutablePair[2];
+        t[0] = IntFloatImmutablePair.of(Colors.GREEN, 0.5f);
+        t[1] = IntFloatImmutablePair.of(Colors.RED, 0.5f);
+        return  t;
+    }
+    boolean shouldRenderBottom(BlockRenderView world, BlockPos pos) {
+        // todo
+        return true;
+    }
+    boolean shouldRenderTop(BlockRenderView world, BlockPos pos) {
+        // todo
+        return true;
+    }
     @Override
     public void renderFluid(BlockPos pos, BlockRenderView world, VertexConsumer vertexConsumer, BlockState blockState, FluidState fluidState) {
 
@@ -117,12 +135,35 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
 
 
         int x = pos.getX() & 0xF, y = pos.getY() &0xF, z = pos.getZ() & 0xF;
-        drawSquare(vertexConsumer, 15728640, x, y, z, 1f, 1f, Colors.GREEN, Direction.WEST);
-//        vertex(vertexConsumer, x, y, z, ul, vl);
-//        vertex(vertexConsumer, x + 1f, y, z, ur, vl);
-//        vertex(vertexConsumer, x + 1f, y, z + 1f, ur, vr);
-//        vertex(vertexConsumer, x, y, z + 1f, ul, vr);
-        // todo
+        final IntFloatImmutablePair[] layers = getLayerColors(world, pos);
+        if (layers.length == 0) {
+            return;
+        }
+        float fx = x + 0.001f, fy = y + 0.001f, fz = z + 0.001f;
+        for (Direction direction : Direction.Type.HORIZONTAL) {
+            final FloatFloatImmutablePair renderRange = shouldRenderHeight(world, pos, direction);
+            float last = 0f;
+            for (IntFloatImmutablePair i : layers) {
+                var commonRange = RangeHelper.getIntersection(renderRange, FloatFloatImmutablePair.of(last, last + i.rightFloat()));
+                if (RangeHelper.isEmpty(commonRange))
+                    continue;
+                float xd = fx, zd = fz;
+                if (direction == Direction.SOUTH) {
+                    zd += 0.998f;
+                } else if (direction == Direction.EAST) {
+                    xd += 0.998f;
+                }
+                drawSquare(vertexConsumer, getLight(world, pos), xd, fy + commonRange.leftFloat(), zd, 0.998f, RangeHelper.getLength(commonRange), i.leftInt(), direction);
+                last += i.rightFloat();
+            }
+        }
+        float height = 0f;
+        for (IntFloatImmutablePair i : layers)
+            height += i.rightFloat();
+        if (shouldRenderBottom(world, pos))
+            drawSquare(vertexConsumer, getLight(world, pos), fx, fy, fz,0.998f, 0.998f, layers[0].leftInt(), Direction.DOWN);
+        if (height >= 1f && shouldRenderBottom(world, pos.up()))
+            drawSquare(vertexConsumer, getLight(world, pos), fx, fy + 0.998f, fz,0.998f, 0.998f, layers[layers.length - 1].leftInt(), Direction.UP);
     }
 
 }
