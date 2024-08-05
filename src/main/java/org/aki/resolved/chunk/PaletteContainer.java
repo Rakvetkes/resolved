@@ -10,7 +10,7 @@ public class PaletteContainer<T> implements NbtConvertible {
 
     private final static DynamicPalette.IDAllocatorProvider DEFAULT_CONTAINER = BiArrayAllocator::new;
     private PaletteStorage storage;
-    private DynamicPalette<T> palette;
+    public DynamicPalette<T> palette;
     private final DynamicPalette.ValueConverter<T> valueConverter;
 
     public PaletteContainer(int size, T nullObject, DynamicPalette.ValueConverter<T> valueConverter) {

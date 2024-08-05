@@ -2,13 +2,13 @@ package org.aki.resolved.layer;
 
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
-public class CompatibilityRegistry {
+public class CompClassRegistry {
 
     private final Int2IntOpenHashMap registry;
     private int classCount;
-    public static final CompatibilityRegistry REGISTRY = new CompatibilityRegistry();
+    public static final CompClassRegistry REGISTRY = new CompClassRegistry();
 
-    private CompatibilityRegistry() {
+    private CompClassRegistry() {
         registry = new Int2IntOpenHashMap();
         classCount = 0;
     }

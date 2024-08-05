@@ -10,7 +10,7 @@ import net.minecraft.util.Identifier;
 import org.aki.resolved.misc.ResolvedFluid;
 import org.aki.resolved.misc.ResolvedFluidBlock;
 import org.aki.resolved.chunk.FluidChunk;
-import org.aki.resolved.layer.CompatibilityRegistry;
+import org.aki.resolved.layer.CompClassRegistry;
 import org.aki.resolved.layer.ConstituentRegistry;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -23,6 +23,7 @@ public class Registered {
 
     public static final ConstituentRegistry.ConstituentAttributes NULL_ATTRIBUTE;
     public static final int CONSTITUENT_AIR;            // it's supposed that nothing is compatible with air.
+    public static final int CONSTITUENT_SOLID;
     public static final int CONSTITUENT_WATER;          // todo springs are broken now
     public static final int CONSTITUENT_LAVA;
 
@@ -40,12 +41,14 @@ public class Registered {
 
         NULL_ATTRIBUTE = new ConstituentRegistry.ConstituentAttributes(0, 0, 0);
         CONSTITUENT_AIR = ConstituentRegistry.REGISTRY.register(Fluids.EMPTY, NULL_ATTRIBUTE.volume(1).density(0).energy(114));
+        CONSTITUENT_SOLID = ConstituentRegistry.REGISTRY.register(new Object(), NULL_ATTRIBUTE.volume(1).density(1).energy(0));
         CONSTITUENT_WATER = ConstituentRegistry.REGISTRY.register(Fluids.WATER, NULL_ATTRIBUTE.volume(1).density(1).energy(514));
         CONSTITUENT_LAVA = ConstituentRegistry.REGISTRY.register(Fluids.LAVA, NULL_ATTRIBUTE.volume(1).density(5).energy(1919));
 
-        CompatibilityRegistry.REGISTRY.createClass(CONSTITUENT_AIR);
-        CompatibilityRegistry.REGISTRY.createClass(CONSTITUENT_WATER);
-        CompatibilityRegistry.REGISTRY.createClass(CONSTITUENT_LAVA);
+        CompClassRegistry.REGISTRY.createClass(CONSTITUENT_AIR);
+        CompClassRegistry.REGISTRY.createClass(CONSTITUENT_SOLID);
+        CompClassRegistry.REGISTRY.createClass(CONSTITUENT_WATER);
+        CompClassRegistry.REGISTRY.createClass(CONSTITUENT_LAVA);
     }
 
     public static void registerAll() {}

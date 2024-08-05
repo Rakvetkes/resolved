@@ -2,7 +2,7 @@ package org.aki.resolved.chunk.idallocator;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
-public class ArrayHelper {
+public final class ArrayHelper {
 
     public static void ensureCapacity(IntArrayList arrayList, int capacity) {
         while (arrayList.size() < capacity) {

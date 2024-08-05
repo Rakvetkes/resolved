@@ -35,7 +35,7 @@ public class ResolvedFluidBlock extends Block {
 
     @Override
     protected void neighborUpdate(BlockState state, World world, BlockPos pos, Block sourceBlock, BlockPos sourcePos, boolean notify) {
-
+        world.scheduleFluidTick(pos, Registered.RESOLVED_FLUID, Registered.RESOLVED_FLUID.getTickRate(world));
     }
 
     @Override
@@ -45,7 +45,7 @@ public class ResolvedFluidBlock extends Block {
 
     @Override
     protected void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
-
+        world.scheduleFluidTick(pos, Registered.RESOLVED_FLUID, Registered.RESOLVED_FLUID.getTickRate(world));
     }
 
 }

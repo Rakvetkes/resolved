@@ -1,5 +1,6 @@
 package org.aki.resolved.layer;
 
+import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 import it.unimi.dsi.fastutil.ints.Int2FloatRBTreeMap;
 import org.aki.resolved.Registered;
 
@@ -26,7 +27,7 @@ public class FluidLayer {
         constituents = new Int2FloatRBTreeMap();
         constituents.put(consId, amount);
         var attributes = ConstituentRegistry.REGISTRY.getAttributes(consId);
-        volume = attributes.volume();
+        volume = attributes.volume() * amount;
         density = attributes.density();
     }
 
@@ -49,7 +50,7 @@ public class FluidLayer {
     }
 
     public boolean isCompatible(int consId) {
-        return CompatibilityRegistry.REGISTRY.checkCompatibility(constituents.firstIntKey(), consId);
+        return CompClassRegistry.REGISTRY.checkCompatibility(constituents.firstIntKey(), consId);
     }
 
     public boolean isCompatible(FluidLayer layer) {
@@ -58,6 +59,10 @@ public class FluidLayer {
 
     public boolean isAir() {
         return constituents.firstIntKey() == Registered.CONSTITUENT_AIR;
+    }
+
+    public boolean isSolid() {
+        return constituents.firstIntKey() == Registered.CONSTITUENT_SOLID;
     }
 
     public float amount(int consId) {
@@ -85,9 +90,8 @@ public class FluidLayer {
 
     public void absorb(int consId, float amount) {
         if (isImmutable()) throw new UnsupportedOperationException();
-        float amount1 = constituents.get(consId) + amount;
-        if (amount1 == 0.0f) constituents.remove(consId);
-        else constituents.put(consId, amount1);
+        constituents.addTo(consId, amount);
+        if (constituents.get(consId) == 0.0f) constituents.remove(consId);
         var attributes = ConstituentRegistry.REGISTRY.getAttributes(consId);
         density = (density * volume + attributes.density() * attributes.volume() * amount)
                 / (volume + attributes.volume() * amount);
@@ -95,9 +99,9 @@ public class FluidLayer {
     }
 
     public void absorb(FluidLayer layer) {
-        if (isImmutable()) throw new UnsupportedOperationException();
+        if (isImmutable() || !isCompatible(layer)) throw new UnsupportedOperationException();
         for (var entry : layer.constituents.int2FloatEntrySet()) {
-            constituents.put(entry.getIntKey(), constituents.get(entry.getIntKey()) + entry.getFloatValue());
+            constituents.addTo(entry.getIntKey(), entry.getFloatValue());
         }
         density = (density * volume + layer.density * layer.volume) / (volume + layer.volume);
         volume = volume + layer.volume;
@@ -111,7 +115,17 @@ public class FluidLayer {
 
     @Override
     public boolean equals(Object o) {
-        return this == o || (o instanceof FluidLayer && constituents.equals(((FluidLayer) o).constituents));
+        if (this == o) return true;
+        if (!(o instanceof FluidLayer) || ((FluidLayer) o).getSize() != getSize()) return false;
+        var it1 = constituents.int2FloatEntrySet().iterator();
+        var it2 = ((FluidLayer) o).constituents.int2FloatEntrySet().iterator();
+        while (it1.hasNext()) {
+            Int2FloatMap.Entry e1 = it1.next(), e2 = it2.next();
+            if (e1.getIntKey() != e2.getIntKey() || FloatComparator.compare(e1.getFloatValue(), e2.getFloatValue()) != 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
 
@@ -138,7 +152,7 @@ public class FluidLayer {
         }
 
         public FluidLayer getMutable() {
-            return new ImmutableFluidLayer(this);
+            return new FluidLayer(this);
         }
 
         public FluidLayer getImmutable() {

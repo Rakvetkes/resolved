@@ -14,6 +14,8 @@ import net.minecraft.util.Colors;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockRenderView;
+import org.aki.resolved.Registered;
+import org.aki.resolved.layer.FluidLayerSet;
 import org.aki.resolved.reaction.RangeHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,19 +43,20 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
     }
 
     protected static float getHeight(BlockRenderView world, BlockPos pos) {
-        // todo
-        return 1f;
+        FluidLayerSet data = Registered.FLUID_DATA.get(BlockViewHelper.getWorld(world).getChunk(pos.getX() >> 4, pos.getZ() >> 4))
+                .getFluidData(pos.getX() & 15, pos.getY(), pos.getZ() & 15);
+        return 1.0f - (data.getTopLayer().isAir() ? data.getTopLayer().getVolume() / FluidLayerSet.FULL_VOLUME : 0.0f);
     }
 
     protected static FloatFloatImmutablePair shouldRenderHeight(BlockRenderView world, BlockPos pos, Direction direction) {
         // todo this is only for test
-        return FloatFloatImmutablePair.of(0, 1);
+//        return FloatFloatImmutablePair.of(0, 1);
         // todo this is what should they do
-//        if (direction.equals(Direction.UP) || direction.equals(Direction.DOWN)) {
-//            throw new UnsupportedOperationException("Direction should be vertical.");
-//        }
-//        float a = getHeight(world, pos), b = getHeight(world, pos.add(direction.getVector()));
-//        return a > b ? FloatFloatImmutablePair.of(b, a) : FloatFloatImmutablePair.of(0, 0);
+        if (direction.equals(Direction.UP) || direction.equals(Direction.DOWN)) {
+            throw new UnsupportedOperationException("Direction should be vertical.");
+        }
+        float a = getHeight(world, pos), b = getHeight(world, pos.add(direction.getVector()));
+        return a > b ? FloatFloatImmutablePair.of(b, a) : FloatFloatImmutablePair.of(0, 0);
     }
 
     /**
@@ -115,9 +118,10 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
     }
     IntFloatImmutablePair[] getLayerColors(BlockRenderView world, BlockPos pos) {
         // todo
-        var t = new IntFloatImmutablePair[2];
-        t[0] = IntFloatImmutablePair.of(Colors.GREEN, 0.5f);
-        t[1] = IntFloatImmutablePair.of(Colors.RED, 0.5f);
+        var t = new IntFloatImmutablePair[1];
+        t[0] = IntFloatImmutablePair.of(Colors.LIGHT_YELLOW, getHeight(world, pos));
+//        t[0] = IntFloatImmutablePair.of(Colors.GREEN, 0.5f);
+//        t[1] = IntFloatImmutablePair.of(Colors.RED, 0.5f);
         return  t;
     }
     boolean shouldRenderBottom(BlockRenderView world, BlockPos pos) {
@@ -162,8 +166,10 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
             height += i.rightFloat();
         if (shouldRenderBottom(world, pos))
             drawSquare(vertexConsumer, getLight(world, pos), fx, fy, fz,0.998f, 0.998f, layers[0].leftInt(), Direction.DOWN);
-        if (height >= 1f && shouldRenderBottom(world, pos.up()))
-            drawSquare(vertexConsumer, getLight(world, pos), fx, fy + 0.998f, fz,0.998f, 0.998f, layers[layers.length - 1].leftInt(), Direction.UP);
+//        if (height >= 1f && shouldRenderBottom(world, pos.up()))
+//            drawSquare(vertexConsumer, getLight(world, pos), fx, fy + 0.998f, fz,0.998f, 0.998f, layers[layers.length - 1].leftInt(), Direction.UP);
+        if (shouldRenderTop(world, pos))
+            drawSquare(vertexConsumer, getLight(world, pos), fx, fy + height * 0.998f, fz, 0.998f, 0.998f, layers[layers.length - 1].leftInt(), Direction.UP);
     }
 
 }

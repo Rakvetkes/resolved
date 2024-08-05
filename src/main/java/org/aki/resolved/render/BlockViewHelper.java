@@ -1,4 +1,4 @@
-package org.aki.resolved.reaction;
+package org.aki.resolved.render;
 
 import net.minecraft.client.render.chunk.ChunkRendererRegion;
 import net.minecraft.world.BlockRenderView;

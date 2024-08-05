@@ -52,6 +52,9 @@ public class DynamicPalette<T> implements NbtConvertible {
 
     public void recordRemoval(int id) {
         counter.remove(id);
+        if (counter.count(id) == 0) {
+            palette.remove(id);
+        }
     }
 
     public boolean hasAny(Predicate<T> predicate) {
@@ -83,7 +86,7 @@ public class DynamicPalette<T> implements NbtConvertible {
         for (int i = 0; i <= maxValue; ++i) {
             if (nbtCompound.contains(String.format("%d", i))) {
                 NbtCompound nbtItem = nbtCompound.getCompound(String.format("%d", i));
-                this.palette.put(i, valueConverter.getValue(nbtItem.get("data")));
+                this.palette.put(i, valueConverter.getValue(nbtItem));
                 this.counter.put(i, nbtItem.getInt("count"));
             }
         }
@@ -94,8 +97,7 @@ public class DynamicPalette<T> implements NbtConvertible {
         nbtCompound.putInt("maxValue", counter.maxValue());
         for (int i = 0; i <= counter.maxValue(); ++i) {
             if (counter.count(i) > 0) {
-                NbtCompound nbtItem = new NbtCompound();
-                nbtItem.put("data", valueConverter.getNbt(palette.get(i)));
+                NbtCompound nbtItem = (NbtCompound) valueConverter.getNbt(palette.get(i));
                 nbtItem.putInt("count", counter.count(i));
                 nbtCompound.put(String.format("%d", i), nbtItem);
             }

@@ -8,9 +8,6 @@ import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.*;
 import net.minecraft.world.gen.chunk.BlendingData;
-import org.aki.resolved.Registered;
-import org.aki.resolved.layer.FluidLayerSet;
-import org.aki.resolved.layer.ConstituentRegistry;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,19 +24,13 @@ public abstract class MixinProtoChunk extends Chunk {
     }
 
     @Inject(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ChunkSection;setBlockState(IIILnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"), locals = LocalCapture.CAPTURE_FAILHARD)
-    public void insertedCode1(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir, int i, int j, int k, int l, ChunkSection chunkSection, boolean bl, int m, int n, int o) {
-        if (ConstituentRegistry.REGISTRY.get(state.getFluidState().getFluid()) > 0) {
-            // todo this should be adjusted if there's a waterlogged block
-            Registered.FLUID_DATA.get(this).setFluidData(m, j, o, new FluidLayerSet(ConstituentRegistry.REGISTRY.get(state.getFluidState().getFluid())));
-        }
+    public void onBlockStateGenerated(BlockPos pos, BlockState state, boolean moved, CallbackInfoReturnable<BlockState> cir, int i, int j, int k, int l, ChunkSection chunkSection, boolean bl, int m, int n, int o) {
+        DataSyncHelper.onBlockStateGenerated(this, state, m, j, o);
     }
 
     @Redirect(method = "setBlockState", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/chunk/ChunkSection;setBlockState(IIILnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;"))
-    public BlockState insertedCode2(ChunkSection instance, int x, int y, int z, BlockState state) {
-        if (ConstituentRegistry.REGISTRY.get(state.getFluidState().getFluid()) > 0) {
-            // todo this should be adjusted if there's a waterlogged block
-            state = Registered.RESOLVED_FLUID_BLOCK.getDefaultState();
-        }
+    public BlockState setBlockState(ChunkSection instance, int x, int y, int z, BlockState state) {
+        state = DataSyncHelper.beforeSetBlockState(state);
         return instance.setBlockState(x, y, z, state);
     }
 
