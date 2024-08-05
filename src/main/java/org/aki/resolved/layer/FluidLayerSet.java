@@ -134,7 +134,7 @@ public class FluidLayerSet implements NbtConvertible {
                             it1.remove();
                             layer2.absorb(layer3);
                             --cycleCount;
-                        }
+                        } else it1.next();
                     }
                     it1.next();
                     it1.next();
@@ -146,7 +146,7 @@ public class FluidLayerSet implements NbtConvertible {
                             layer1.absorb(layer4);
                             --cycleCount;
                             --bubblingTimes;
-                        }
+                        } else it1.previous();
                     }
                 } else {
                     layer1 = layer2;
