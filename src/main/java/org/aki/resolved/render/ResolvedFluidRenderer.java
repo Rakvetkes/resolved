@@ -15,8 +15,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockRenderView;
 import org.aki.resolved.Registered;
+import org.aki.resolved.chunk.FluidChunk;
 import org.aki.resolved.layer.FluidLayerSet;
-import org.aki.resolved.reaction.RangeHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,8 +43,9 @@ public class ResolvedFluidRenderer extends SimpleFluidRenderHandler {
     }
 
     protected static float getHeight(BlockRenderView world, BlockPos pos) {
-        FluidLayerSet data = Registered.FLUID_DATA.get(BlockViewHelper.getWorld(world).getChunk(pos.getX() >> 4, pos.getZ() >> 4))
-                .getFluidData(pos.getX() & 15, pos.getY(), pos.getZ() & 15);
+        FluidChunk chunk = Registered.FLUID_DATA.getNullable(BlockViewHelper.getWorld(world).getChunk(pos.getX() >> 4, pos.getZ() >> 4));
+        if (chunk == null) return 0.0f;
+        FluidLayerSet data = chunk.getFluidData(pos.getX() & 15, pos.getY(), pos.getZ() & 15);
         return 1.0f - (data.getTopLayer().isAir() || data.getTopLayer().isSolid() ? data.getTopLayer().getVolume() / FluidLayerSet.FULL_VOLUME : 0.0f);
     }
 

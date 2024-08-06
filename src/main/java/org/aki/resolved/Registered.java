@@ -15,7 +15,7 @@ import org.aki.resolved.layer.ConstituentRegistry;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 
-public class Registered {
+public final class Registered {
 
     public static final ComponentKey<FluidChunk> FLUID_DATA;
     public static final Fluid RESOLVED_FLUID;

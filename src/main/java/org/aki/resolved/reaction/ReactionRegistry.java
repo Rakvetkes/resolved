@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntConsumer;
 
-public class ReactionRegistry<T extends Reaction> {
+public final class ReactionRegistry<T extends Reaction> {
 
     private final Int2ObjectOpenHashMap<T> registry;
     private final Int2ObjectOpenHashMap<IntArrayList> searchList;

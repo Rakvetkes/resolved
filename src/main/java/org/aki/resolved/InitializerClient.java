@@ -9,7 +9,7 @@ import net.minecraft.client.render.RenderLayer;
 import org.aki.resolved.render.ResolvedFluidRenderer;
 
 @Environment(EnvType.CLIENT)
-public class InitializerClient implements ClientModInitializer {
+public final class InitializerClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {

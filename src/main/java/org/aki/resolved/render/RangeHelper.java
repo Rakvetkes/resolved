@@ -1,4 +1,4 @@
-package org.aki.resolved.reaction;
+package org.aki.resolved.render;
 
 import it.unimi.dsi.fastutil.floats.FloatFloatImmutablePair;
 import org.jetbrains.annotations.NotNull;

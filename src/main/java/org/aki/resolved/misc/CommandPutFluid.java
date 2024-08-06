@@ -19,7 +19,7 @@ import org.aki.resolved.layer.FluidLayerSet;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class CommandPutFluid {
+public final class CommandPutFluid {
 
     public static void initialize() {
         CommandRegistrationCallback.EVENT.register(CommandPutFluid::registerCommand);

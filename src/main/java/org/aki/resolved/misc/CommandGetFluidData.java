@@ -15,7 +15,7 @@ import org.aki.resolved.layer.FluidLayerSet;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class CommandGetFluidData {
+public final class CommandGetFluidData {
 
     public static void initialize() {
         CommandRegistrationCallback.EVENT.register(CommandGetFluidData::registerCommand);

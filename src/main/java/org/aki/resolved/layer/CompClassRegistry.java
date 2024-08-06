@@ -2,7 +2,7 @@ package org.aki.resolved.layer;
 
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
-public class CompClassRegistry {
+public final class CompClassRegistry {
 
     private final Int2IntOpenHashMap registry;
     private int classCount;

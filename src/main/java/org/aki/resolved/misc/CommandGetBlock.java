@@ -14,7 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
-public class CommandGetBlock {
+public final class CommandGetBlock {
 
     public static void initialize() {
         CommandRegistrationCallback.EVENT.register(CommandGetBlock::registerCommand);

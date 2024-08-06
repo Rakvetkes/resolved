@@ -88,25 +88,22 @@ public class FluidLayerSet implements NbtConvertible {
 
     public void replace(float from, FluidLayer layer) {
         if (isImmutable()) throw new UnsupportedOperationException();
-        if (FloatComparator.compare(from + layer.getVolume(), FULL_VOLUME) == 1) {
-            throw new IllegalArgumentException();           // note that this guarantees from < FULL_VOLUME
-        }
         ListIterator<FluidLayer> it = layers.listIterator();
         FluidLayer layer1 = it.next();
         float level = 0.0f;
-        while (FloatComparator.compare(level + layer1.getVolume(), from) == -1) {
+        while (it.hasNext() && level + layer1.getVolume() < from) {
             level += layer1.getVolume();
-            layer1 = it.next();                             // note this should never reach the end of the list
+            layer1 = it.next();
         }
         if (level == from) {
             it.remove();
-        } else {
+        } else if (level < from) {
             it.set(layer1.sliceByVolume(from - level));
         }
-        it.add(layer.getMutable());                         // note what's stored here may be exactly the object referred to by layer
-        while (FloatComparator.compare(level + layer1.getVolume(), from + layer.getVolume()) == -1) {
+        it.add(layer.getMutable());         // note what's stored here may be exactly the object referred to by layer
+        while (it.hasNext() && level + layer1.getVolume() < from + layer.getVolume()) {
             level += layer1.getVolume();
-            layer1 = it.next();                             // note this should never reach the end of the list
+            layer1 = it.next();
             it.remove();
         }
         if (level + layer1.getVolume() > from + layer.getVolume()) {
@@ -178,6 +175,10 @@ public class FluidLayerSet implements NbtConvertible {
         });
     }
 
+    protected static boolean isExchangeable(FluidLayer layer1, FluidLayer layer2) {
+        return !layer1.isSolid() && !layer2.isSolid() && !(layer1.isAir() && layer2.isAir());
+    }
+
     public static void exchange(FluidLayerSet layerSet1, FluidLayerSet layerSet2, float exchangeRate) {
         if (layerSet1.isImmutable() || layerSet2.isImmutable()) throw new UnsupportedOperationException();
         layerSet1.align(layerSet2);
@@ -187,7 +188,7 @@ public class FluidLayerSet implements NbtConvertible {
         while (it1.hasNext() && it2.hasNext()) {
             FluidLayer layer1 = it1.next();
             FluidLayer layer2 = it2.next();
-            if (!layer1.isSolid() && !layer2.isSolid() && layer1.getVolume()
+            if (isExchangeable(layer1, layer2) && layer1.getVolume()
                     * Math.min(exchangeRate, 1.0f - exchangeRate) >= CUT_DOWN_VOLUME) {
                 it1.set(layer2.sliceByProportion(exchangeRate));
                 it1.add(layer1.sliceByProportion(1.0f - exchangeRate));
@@ -201,7 +202,7 @@ public class FluidLayerSet implements NbtConvertible {
 
     protected static void exchangeVertical(FluidLayerSet layerSet1, FluidLayerSet layerSet2) {
         if (layerSet1.isImmutable() || layerSet2.isImmutable()) throw new UnsupportedOperationException();
-        if (!layerSet1.getTopLayer().isSolid() && !layerSet2.getBottomLayer().isSolid()) {
+        if (isExchangeable(layerSet1.getTopLayer(), layerSet2.getBottomLayer())) {
             if (layerSet1.getTopLayer().isCompatible(layerSet2.getBottomLayer())) {
                 FluidLayer layer = layerSet1.getTopLayer().getMutable();
                 float volume = layer.getVolume();

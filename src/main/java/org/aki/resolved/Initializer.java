@@ -8,7 +8,7 @@ import org.aki.resolved.misc.CommandPutFluid;
 import org.ladysnake.cca.api.v3.chunk.ChunkComponentFactoryRegistry;
 import org.ladysnake.cca.api.v3.chunk.ChunkComponentInitializer;
 
-public class Initializer implements ModInitializer, ChunkComponentInitializer {
+public final class Initializer implements ModInitializer, ChunkComponentInitializer {
 
     @Override
     public void onInitialize() {

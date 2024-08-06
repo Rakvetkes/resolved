@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 
-public class StateModelRegistry {
+public final class StateModelRegistry {
 
     private final Object2ObjectOpenHashMap<Block, ModelProvider> registry;
     public static final StateModelRegistry REGISTRY = new StateModelRegistry();

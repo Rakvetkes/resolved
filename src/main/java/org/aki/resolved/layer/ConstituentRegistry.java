@@ -3,7 +3,7 @@ package org.aki.resolved.layer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.util.collection.Int2ObjectBiMap;
 
-public class ConstituentRegistry {
+public final class ConstituentRegistry {
 
     private final Int2ObjectBiMap<Object> registry;
     private final Int2ObjectOpenHashMap<ConstituentAttributes> attributeRegistry;

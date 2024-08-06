@@ -1,6 +1,5 @@
 package org.aki.resolved.layer;
 
-import it.unimi.dsi.fastutil.ints.Int2FloatMap;
 import it.unimi.dsi.fastutil.ints.Int2FloatRBTreeMap;
 import org.aki.resolved.Registered;
 
@@ -115,17 +114,18 @@ public class FluidLayer {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof FluidLayer) || ((FluidLayer) o).getSize() != getSize()) return false;
-        var it1 = constituents.int2FloatEntrySet().iterator();
-        var it2 = ((FluidLayer) o).constituents.int2FloatEntrySet().iterator();
-        while (it1.hasNext()) {
-            Int2FloatMap.Entry e1 = it1.next(), e2 = it2.next();
-            if (e1.getIntKey() != e2.getIntKey() || FloatComparator.compare(e1.getFloatValue(), e2.getFloatValue()) != 0) {
-                return false;
-            }
-        }
-        return true;
+//        if (this == o) return true;
+//        if (!(o instanceof FluidLayer) || ((FluidLayer) o).getSize() != getSize()) return false;
+//        var it1 = constituents.int2FloatEntrySet().iterator();
+//        var it2 = ((FluidLayer) o).constituents.int2FloatEntrySet().iterator();
+//        while (it1.hasNext()) {
+//            Int2FloatMap.Entry e1 = it1.next(), e2 = it2.next();
+//            if (e1.getIntKey() != e2.getIntKey() || FloatComparator.compare(e1.getFloatValue(), e2.getFloatValue()) != 0) {
+//                return false;
+//            }
+//        }
+//        return true;
+        return this == o || (o instanceof FluidLayer && constituents.equals(((FluidLayer) o).constituents));
     }
 
 
