@@ -147,7 +147,15 @@ public class FluidChunk implements Component, AutoSyncedComponent {
                 public void accept(int r) {
                     if (!contains(r)) {
                         flag = false;
-                        linkedRegistry.get(r).forEachReagent(value -> {
+                        linkedRegistry.get(r).forEachReagent1(value -> {
+                            flag |= existingConstituents.get(value) == 0;
+                        });
+                        if (!flag) {
+                            activate(r);
+                            return;
+                        }
+                        flag = false;
+                        linkedRegistry.get(r).forEachReagent2(value -> {
                             flag |= existingConstituents.get(value) == 0;
                         });
                         if (!flag) activate(r);
@@ -162,7 +170,12 @@ public class FluidChunk implements Component, AutoSyncedComponent {
                 @Override
                 public void accept(int r) {
                     flag = false;
-                    linkedRegistry.get(r).forEachReagent(value -> {
+                    linkedRegistry.get(r).forEachReagent1(value -> {
+                        flag |= existingConstituents.get(value) == 0;
+                    });
+                    if (!flag) return;
+                    flag = false;
+                    linkedRegistry.get(r).forEachReagent2(value -> {
                         flag |= existingConstituents.get(value) == 0;
                     });
                     if (flag) inactivate(r);

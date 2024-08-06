@@ -109,8 +109,13 @@ public class ResolvedFluid extends Fluid {
                     b.exchangeVertical(d, r == Direction.UP);
                     chunk.forEachSurfaceReaction(value -> {
                         SurfaceReaction o = ReactionRegistry.SURFACE_REACTION_REGISTRY.get(value);
-                        if (r == Direction.UP) o.react(b.getTopLayerMutable(), d.getBottomLayerMutable(), temp);
-                        else o.react(d.getTopLayerMutable(), b.getBottomLayerMutable(), temp);
+                        if (r == Direction.UP) {
+                            o.react(b.getTopLayerMutable(), d.getBottomLayerMutable(), temp);
+                            o.react(d.getBottomLayerMutable(), b.getTopLayerMutable(), temp);
+                        } else {
+                            o.react(b.getBottomLayerMutable(), d.getTopLayerMutable(), temp);
+                            o.react(d.getTopLayerMutable(), b.getBottomLayerMutable(), temp);
+                        }
                     });
                 } else {
                     FluidLayerSet.exchange(b, d, 0.2f);
