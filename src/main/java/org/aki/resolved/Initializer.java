@@ -16,6 +16,7 @@ public final class Initializer implements ModInitializer, ChunkComponentInitiali
         CommandGetBlock.initialize();
         CommandGetFluidData.initialize();
         CommandPutFluid.initialize();
+        // a
     }
 
     @Override
